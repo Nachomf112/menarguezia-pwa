@@ -1,0 +1,19 @@
+<!doctype html>
+<html lang="es"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Menarguez‑IA · PWA</title>
+<link rel="manifest" href="/manifest.json"><meta name="theme-color" content="#0b1020">
+<style>body{font-family:system-ui,Segoe UI,Roboto,Arial,sans-serif;background:#0b1020;color:#eaf2ff;margin:0;display:grid;place-items:center;height:100vh} .card{background:#111735;border:1px solid #1e2b5a;border-radius:16px;padding:28px;max-width:720px;box-shadow:0 10px 30px rgba(0,0,0,.35)} a{color:#59d0ff}</style>
+</head><body>
+<div class="card">
+<h1>Menarguez‑IA Solutions · PWA</h1>
+<p>Base estática para publicar en Vercel y verificar TWA/Universal Links.</p>
+<ul>
+<li>Manifest: <code>/manifest.json</code></li>
+<li>Service Worker: <code>/service-worker.js</code></li>
+<li>Digital Asset Links: <code>/.well-known/assetlinks.json</code></li>
+<li>Apple App Site Association: <code>/.well-known/apple-app-site-association</code></li>
+</ul>
+</div>
+<script>if('serviceWorker'in navigator){addEventListener('load',()=>navigator.serviceWorker.register('/service-worker.js'))}</script>
+</body></html>
