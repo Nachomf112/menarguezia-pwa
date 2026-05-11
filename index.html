@@ -8,6 +8,8 @@
 <meta name="apple-mobile-web-app-title" content="Menarguez-IA">
 <meta name="mobile-web-app-capable" content="yes">
 <title>Suite Menarguez-IA · Mobile SaaS</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
 
 <style>
 :root{
@@ -43,7 +45,7 @@ html[data-theme="light"]{
 html,body{
  margin:0;
  min-height:100%;
- font-family:Arial,Helvetica,sans-serif;
+ font-family:'Geist',system-ui,sans-serif;
  background:var(--bg);
  color:var(--text);
  touch-action:manipulation;
@@ -240,6 +242,9 @@ html[data-theme="light"] .topbar{
  border:1px solid var(--line);
  border-radius:18px;
  padding:18px;
+ position:relative;
+ display:flex;
+ flex-direction:column;
 }
 
 .kpi strong{
@@ -372,6 +377,8 @@ textarea:focus,input:focus,select:focus{
  padding:16px;
  overflow:auto;
  white-space:pre-wrap;
+ font-family:'Geist Mono',monospace;
+ font-size:13px;
 }
 
 .progress{
@@ -863,49 +870,162 @@ footer a{
    </section>
 
    <section id="marketplace" class="module panel">
-    <h2>Marketplace interno</h2>
+    <h2>🧩 Marketplace de Integraciones</h2>
+    <p style="color:var(--muted);margin-bottom:20px;font-size:14px">Conectores listos para desplegar en tu infraestructura. Cada módulo se integra con tu suite en un clic.</p>
     <div class="market">
-     <div class="app-card"><h3>Telegram Approval</h3><ul><li>Aprobación humana</li><li>Alertas</li></ul><button class="btn primary" type="button" data-install="Telegram Approval">Instalar</button></div>
-     <div class="app-card"><h3>PDF Reports</h3><ul><li>Informes ejecutivos</li><li>Branding</li></ul><button class="btn primary" type="button" data-install="PDF Reports">Instalar</button></div>
-     <div class="app-card"><h3>Google Sheets Sync</h3><ul><li>Entrada de datos</li><li>Histórico</li></ul><button class="btn primary" type="button" data-install="Google Sheets Sync">Instalar</button></div>
-     <div class="app-card"><h3>SOC Pack</h3><ul><li>Logs</li><li>IOC</li></ul><button class="btn primary" type="button" data-install="SOC Pack">Instalar</button></div>
+     <div class="app-card" style="position:relative;opacity:.6">
+      <div style="position:absolute;top:10px;right:10px;background:var(--orange);color:#000;font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px">PRONTO</div>
+      <h3>📲 Telegram Approval</h3><ul><li>Aprobación humana en flujos IA</li><li>Alertas SOC en tiempo real</li><li>Comandos por chat</li></ul>
+      <button class="btn" type="button" disabled>Próximamente</button>
+     </div>
+     <div class="app-card" style="position:relative;opacity:.6">
+      <div style="position:absolute;top:10px;right:10px;background:var(--orange);color:#000;font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px">PRONTO</div>
+      <h3>📄 PDF Reports</h3><ul><li>Informes ejecutivos con branding</li><li>Export automático por email</li><li>Plantillas personalizables</li></ul>
+      <button class="btn" type="button" disabled>Próximamente</button>
+     </div>
+     <div class="app-card" style="position:relative;opacity:.6">
+      <div style="position:absolute;top:10px;right:10px;background:var(--orange);color:#000;font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px">PRONTO</div>
+      <h3>📊 Google Sheets Sync</h3><ul><li>Volcado automático de análisis</li><li>Histórico exportable</li><li>Dashboards en tiempo real</li></ul>
+      <button class="btn" type="button" disabled>Próximamente</button>
+     </div>
+     <div class="app-card" style="position:relative;opacity:.6">
+      <div style="position:absolute;top:10px;right:10px;background:var(--orange);color:#000;font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px">PRONTO</div>
+      <h3>🧬 SOC Pack</h3><ul><li>Análisis de logs e IOC</li><li>Reglas MITRE ATT&amp;CK</li><li>Integración Wazuh</li></ul>
+      <button class="btn" type="button" disabled>Próximamente</button>
+     </div>
+    </div>
+    <div style="margin-top:24px;background:var(--panel2);border:1px solid var(--line);border-radius:14px;padding:22px;text-align:center">
+     <div style="font-size:28px;margin-bottom:8px">🚀</div>
+     <div style="font-weight:600;font-size:15px;margin-bottom:6px">¿Necesitas una integración a medida?</div>
+     <div style="color:var(--muted);font-size:13px;margin-bottom:16px">Desarrollamos conectores personalizados para tu stack en Make, n8n o API REST.</div>
+     <a href="mailto:info@imenarguez-ia.com" style="display:inline-block;background:var(--brand);color:#fff;padding:11px 24px;border-radius:10px;text-decoration:none;font-weight:600;font-size:14px">Contactar → info@imenarguez-ia.com</a>
     </div>
    </section>
 
    <section id="whitelabel" class="module panel">
-    <h2>White-label Mode</h2>
+    <h2>🎨 White-label Mode</h2>
+    <p style="color:var(--muted);margin-bottom:20px;font-size:14px">Personaliza la suite con la identidad de tu cliente y véndela como solución propia. Sin mencionar Menarguez-IA.</p>
     <div class="grid">
-     <input id="wlName" placeholder="Nombre de empresa" value="Menarguez-IA Solutions">
-     <input id="wlLetter" placeholder="Letra logo" value="M">
+     <div>
+      <label style="display:block;font-size:12px;color:var(--muted);margin-bottom:6px;font-weight:500;text-transform:uppercase;letter-spacing:.06em">Nombre de empresa</label>
+      <input id="wlName" placeholder="Ej: TechCorp AI Suite" value="Menarguez-IA Solutions" style="width:100%">
+     </div>
+     <div>
+      <label style="display:block;font-size:12px;color:var(--muted);margin-bottom:6px;font-weight:500;text-transform:uppercase;letter-spacing:.06em">Letra del logo</label>
+      <input id="wlLetter" placeholder="T" value="M" style="width:100%">
+     </div>
     </div>
-    <div class="actions">
+    <div class="actions" style="margin-top:14px">
      <button class="btn primary" type="button" data-action="whitelabel">Aplicar branding</button>
     </div>
-    <div class="output">Permite vender la plataforma como solución privada para clientes.</div>
+    <div class="output" style="margin-top:16px">Previsualiza cómo verá el cliente final la plataforma con su propia identidad.</div>
+    <div style="margin-top:20px;background:var(--panel2);border:1px solid var(--line);border-radius:14px;padding:20px">
+     <div style="font-size:13px;font-weight:600;margin-bottom:14px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em">¿Qué incluye el White-label?</div>
+     <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;font-size:13px">
+      <div style="background:var(--panel);border-radius:10px;padding:12px">✅ Logo y nombre propios</div>
+      <div style="background:var(--panel);border-radius:10px;padding:12px">✅ Dominio personalizado</div>
+      <div style="background:var(--panel);border-radius:10px;padding:12px">✅ Sin branding Menarguez-IA</div>
+      <div style="background:var(--panel);border-radius:10px;padding:12px">✅ Soporte técnico incluido</div>
+     </div>
+     <div style="margin-top:16px;padding-top:16px;border-top:1px solid var(--line);text-align:center">
+      <span style="color:var(--muted);font-size:13px">Disponible en plan </span>
+      <span style="background:var(--brand);color:#fff;font-size:12px;font-weight:700;padding:2px 10px;border-radius:20px">ENTERPRISE</span>
+      <span style="color:var(--muted);font-size:13px"> · </span>
+      <a href="mailto:info@imenarguez-ia.com" style="color:var(--brand2);font-size:13px;text-decoration:none;font-weight:500">Solicitar info →</a>
+     </div>
+    </div>
    </section>
 
    <section id="api" class="module panel">
-    <h2>API Simulator</h2>
-    <div class="api-box"><pre>{
-  "endpoint": "/api/v1/analyze",
-  "module": "ai_detector",
-  "auth": "Bearer API_KEY",
-  "integrations": ["Make", "n8n", "Telegram", "Google Sheets"],
+    <h2>🔌 API Simulator</h2>
+    <p style="color:var(--muted);margin-bottom:18px;font-size:14px">Simula llamadas a la API de Menarguez-IA. Copia los ejemplos directamente en Make, n8n o tu código.</p>
+    <div style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap">
+     <button class="btn primary" type="button" onclick="showApiExample('detector')" style="min-height:36px;font-size:13px;padding:6px 14px">AI Detector</button>
+     <button class="btn" type="button" onclick="showApiExample('humanizer')" style="min-height:36px;font-size:13px;padding:6px 14px">Humanizer</button>
+     <button class="btn" type="button" onclick="showApiExample('soc')" style="min-height:36px;font-size:13px;padding:6px 14px">SOC Assistant</button>
+     <button class="btn" type="button" onclick="showApiExample('reputation')" style="min-height:36px;font-size:13px;padding:6px 14px">Reputation</button>
+    </div>
+    <div class="api-box"><pre id="apiExample">{
+  "endpoint": "/api/v1/detector",
+  "method": "POST",
+  "auth": "Bearer YOUR_API_KEY",
+  "body": {
+    "text": "Texto a analizar...",
+    "lang": "es"
+  },
   "response": {
-    "human_score": 82,
-    "risk": "low",
-    "recommendation": "safe_to_publish"
-  }
+    "verdict": "AI",
+    "human_score": 18,
+    "ai_probability": 82,
+    "confidence": "HIGH",
+    "signals": ["vocabulario genérico", "estructura perfecta"]
+  },
+  "integrations": ["Make", "n8n", "Telegram", "Zapier"]
 }</pre></div>
+    <div style="margin-top:16px;background:var(--panel2);border:1px solid var(--line);border-radius:14px;padding:18px">
+     <div style="font-size:13px;font-weight:600;margin-bottom:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em">Obtener acceso API</div>
+     <div style="font-size:13px;color:var(--muted);margin-bottom:14px">Disponible en planes Pro, Business y Enterprise. Rate limit según plan.</div>
+     <a href="mailto:info@imenarguez-ia.com?subject=Acceso API Menarguez-IA" style="display:inline-block;background:var(--brand);color:#fff;padding:10px 20px;border-radius:10px;text-decoration:none;font-weight:600;font-size:13px">Solicitar API Key →</a>
+    </div>
    </section>
 
    <section id="pricing" class="module panel">
-    <h2>Planes SaaS</h2>
+    <h2>💳 Planes SaaS</h2>
+    <p style="color:var(--muted);margin-bottom:20px;font-size:14px">Sin permanencia. Sin sorpresas. Precio fijo cerrado. Cambia de plan cuando quieras.</p>
     <div class="pricing">
-     <div class="price-card"><h3>Free</h3><div class="price">0€</div><ul><li>10 análisis/día</li><li>Sin API</li></ul></div>
-     <div class="price-card"><h3>Pro</h3><div class="price">19€</div><ul><li>Historial</li><li>Exportación</li></ul></div>
-     <div class="price-card"><h3>Business</h3><div class="price">49€</div><ul><li>API</li><li>Make/n8n</li><li>Multiempresa</li></ul></div>
-     <div class="price-card"><h3>Enterprise</h3><div class="price">Custom</div><ul><li>SOC</li><li>Compliance</li><li>White-label</li></ul></div>
+     <div class="price-card">
+      <h3>Free</h3>
+      <div class="price">0€<span style="font-size:13px;font-weight:400;color:var(--muted)">/mes</span></div>
+      <ul>
+       <li>10 análisis/día</li>
+       <li>AI Detector básico</li>
+       <li>Sin API</li>
+       <li>Sin historial</li>
+      </ul>
+      <button class="btn" style="width:100%;margin-top:auto;min-height:40px" disabled>Plan actual</button>
+     </div>
+     <div class="price-card" style="border-color:var(--brand)">
+      <div style="position:absolute;top:-1px;left:50%;transform:translateX(-50%);background:var(--brand);color:#fff;font-size:11px;font-weight:700;padding:3px 12px;border-radius:0 0 8px 8px;letter-spacing:.06em">MÁS POPULAR</div>
+      <h3 style="padding-top:10px">Pro</h3>
+      <div class="price">19€<span style="font-size:13px;font-weight:400;color:var(--muted)">/mes</span></div>
+      <ul>
+       <li>500 análisis/mes</li>
+       <li>Todos los módulos</li>
+       <li>Historial completo</li>
+       <li>Exportación PDF/HTML</li>
+       <li>Soporte por email</li>
+      </ul>
+      <a href="mailto:info@imenarguez-ia.com?subject=Plan Pro" style="display:block;background:var(--brand);color:#fff;padding:10px;border-radius:10px;text-decoration:none;font-weight:600;font-size:13px;text-align:center;margin-top:auto">Empezar →</a>
+     </div>
+     <div class="price-card" style="position:relative">
+      <h3>Business</h3>
+      <div class="price">49€<span style="font-size:13px;font-weight:400;color:var(--muted)">/mes</span></div>
+      <ul>
+       <li>Análisis ilimitados</li>
+       <li>Acceso API REST</li>
+       <li>Make / n8n integración</li>
+       <li>Multiempresa</li>
+       <li>Dashboard analytics</li>
+       <li>Soporte prioritario</li>
+      </ul>
+      <a href="mailto:info@imenarguez-ia.com?subject=Plan Business" style="display:block;background:var(--panel2);border:1px solid var(--line);color:var(--text);padding:10px;border-radius:10px;text-decoration:none;font-weight:600;font-size:13px;text-align:center;margin-top:auto">Contactar →</a>
+     </div>
+     <div class="price-card" style="position:relative">
+      <h3>Enterprise</h3>
+      <div class="price" style="font-size:22px">A medida</div>
+      <ul>
+       <li>SOC/Blue Team completo</li>
+       <li>Compliance IA</li>
+       <li>White-label</li>
+       <li>Despliegue en tu servidor</li>
+       <li>SLA garantizado</li>
+       <li>Formación incluida</li>
+      </ul>
+      <a href="mailto:info@imenarguez-ia.com?subject=Plan Enterprise" style="display:block;background:var(--panel2);border:1px solid var(--line);color:var(--text);padding:10px;border-radius:10px;text-decoration:none;font-weight:600;font-size:13px;text-align:center;margin-top:auto">Hablar con Nacho →</a>
+     </div>
+    </div>
+    <div style="margin-top:20px;text-align:center;color:var(--muted);font-size:13px">
+     Primera reunión gratuita y sin compromiso · <a href="mailto:info@imenarguez-ia.com" style="color:var(--brand2)">info@imenarguez-ia.com</a>
     </div>
    </section>
 
@@ -954,6 +1074,68 @@ footer a{
 </div>
 
 <script>
+const apiExamples = {
+  detector: `{
+  "endpoint": "/api/v1/detector",
+  "method": "POST",
+  "auth": "Bearer YOUR_API_KEY",
+  "body": { "text": "Texto a analizar...", "lang": "es" },
+  "response": {
+    "verdict": "AI",
+    "human_score": 18,
+    "ai_probability": 82,
+    "confidence": "HIGH",
+    "signals": ["vocabulario genérico", "estructura perfecta"]
+  }
+}`,
+  humanizer: `{
+  "endpoint": "/api/v1/humanizer",
+  "method": "POST",
+  "auth": "Bearer YOUR_API_KEY",
+  "body": { "text": "Texto generado por IA...", "tone": "casual", "lang": "es" },
+  "response": {
+    "humanized_text": "Texto reescrito con voz humana...",
+    "changes": 14,
+    "naturalness_score": 91
+  }
+}`,
+  soc: `{
+  "endpoint": "/api/v1/soc",
+  "method": "POST",
+  "auth": "Bearer YOUR_API_KEY",
+  "body": { "log": "Failed SSH login 192.168.1.45 x47 in 2min" },
+  "response": {
+    "threat": "Brute Force SSH",
+    "mitre": "T1110.001",
+    "severity": "HIGH",
+    "action": "block_ip",
+    "alert_sent": true
+  }
+}`,
+  reputation: `{
+  "endpoint": "/api/v1/reputation",
+  "method": "POST",
+  "auth": "Bearer YOUR_API_KEY",
+  "body": { "text": "Reseña o comentario a analizar..." },
+  "response": {
+    "sentiment": "negative",
+    "risk_level": "HIGH",
+    "is_fake": true,
+    "recommendation": "respond_publicly"
+  }
+}`
+};
+
+function showApiExample(key) {
+  const el = document.getElementById('apiExample');
+  if (el && apiExamples[key]) {
+    el.textContent = apiExamples[key];
+    // highlight active button
+    document.querySelectorAll('#api .btn').forEach(b => b.classList.remove('primary'));
+    event.target.classList.add('primary');
+  }
+}
+
 let analysisCount=0;
 let riskCount=0;
 let credits=100;
@@ -1177,7 +1359,7 @@ function askMena(){
 }
 
 function exportReport(){
- const content=`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Informe Menarguez-IA</title><style>body{font-family:Arial;padding:30px}h1{color:#3c3489}.box{border:1px solid #ddd;padding:16px;border-radius:12px;margin:12px 0}</style></head><body><h1>Informe Ejecutivo Menarguez-IA</h1><div class="box">Análisis realizados: ${analysisCount}</div><div class="box">Riesgos detectados: ${riskCount}</div><div class="box">Créditos restantes: ${credits}</div><p>Suite operativa y preparada para integración SaaS.</p></body></html>`;
+ const content=`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Informe Menarguez-IA</title><style>body{font-family:'Geist',system-ui,sans-serif;padding:30px}h1{color:#3c3489}.box{border:1px solid #ddd;padding:16px;border-radius:12px;margin:12px 0}</style></head><body><h1>Informe Ejecutivo Menarguez-IA</h1><div class="box">Análisis realizados: ${analysisCount}</div><div class="box">Riesgos detectados: ${riskCount}</div><div class="box">Créditos restantes: ${credits}</div><p>Suite operativa y preparada para integración SaaS.</p></body></html>`;
  const blob=new Blob([content],{type:'text/html'});
  const a=document.createElement('a');
  a.href=URL.createObjectURL(blob);
