@@ -785,6 +785,7 @@ footer a{
     <div class="actions">
      <button class="btn primary" type="button" data-action="run-detector">Analizar</button>
      <button class="btn" type="button" data-action="load-detector">Ejemplo</button>
+     <button class="btn" type="button" onclick="$('detectorText').value='';$('detectorOutput').textContent='Esperando análisis...';$('humanScore').textContent='0%';$('aiRisk').textContent='-'">Limpiar</button>
     </div>
     <div class="grid" style="margin-top:16px">
      <div class="card"><span>Human Score</span><strong id="humanScore">0%</strong></div>
@@ -807,6 +808,7 @@ footer a{
     <div class="actions">
      <button class="btn primary" type="button" data-action="run-humanizer">Humanizar</button>
      <button class="btn" type="button" data-action="load-humanizer">Ejemplo</button>
+     <button class="btn" type="button" onclick="$('humanizerText').value='';$('humanizerOutput').textContent='Esperando...'">Limpiar</button>
     </div>
     <div class="output" id="humanizerOutput">Esperando texto...</div>
    </section>
@@ -818,6 +820,7 @@ footer a{
     <div class="actions">
      <button class="btn primary" type="button" data-action="run-linkedin">Optimizar</button>
      <button class="btn" type="button" data-action="load-linkedin">Ejemplo</button>
+     <button class="btn" type="button" onclick="$('linkedinText').value='';$('linkedinOutput').textContent='Esperando...'">Limpiar</button>
     </div>
     <div class="output" id="linkedinOutput">Esperando idea...</div>
    </section>
@@ -829,6 +832,7 @@ footer a{
     <div class="actions">
      <button class="btn primary" type="button" data-action="run-reputation">Analizar riesgo</button>
      <button class="btn" type="button" data-action="load-reputation">Ejemplo</button>
+     <button class="btn" type="button" onclick="$('reputationText').value='';$('reputationOutput').textContent='Esperando...'">Limpiar</button>
     </div>
     <div class="output" id="reputationOutput">Esperando análisis...</div>
    </section>
@@ -840,6 +844,7 @@ footer a{
     <div class="actions">
      <button class="btn primary" type="button" data-action="run-soc">Analizar logs</button>
      <button class="btn" type="button" data-action="load-soc">Ejemplo</button>
+     <button class="btn" type="button" onclick="$('socText').value='';$('socOutput').textContent='Esperando...'">Limpiar</button>
     </div>
     <div class="output" id="socOutput">Esperando logs...</div>
    </section>
@@ -850,6 +855,7 @@ footer a{
     <div class="actions">
      <button class="btn primary" type="button" data-action="run-compliance">Evaluar cumplimiento</button>
      <button class="btn" type="button" data-action="load-compliance">Ejemplo</button>
+     <button class="btn" type="button" onclick="$('complianceText').value='';$('complianceOutput').textContent='Esperando...'">Limpiar</button>
     </div>
     <div class="output" id="complianceOutput">Esperando caso de uso...</div>
    </section>
@@ -1359,7 +1365,139 @@ function askMena(){
 }
 
 function exportReport(){
- const content=`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Informe Menarguez-IA</title><style>body{font-family:'Geist',system-ui,sans-serif;padding:30px}h1{color:#3c3489}.box{border:1px solid #ddd;padding:16px;border-radius:12px;margin:12px 0}</style></head><body><h1>Informe Ejecutivo Menarguez-IA</h1><div class="box">Análisis realizados: ${analysisCount}</div><div class="box">Riesgos detectados: ${riskCount}</div><div class="box">Créditos restantes: ${credits}</div><p>Suite operativa y preparada para integración SaaS.</p></body></html>`;
+ const now = new Date();
+ const fecha = now.toLocaleDateString('es-ES',{day:'2-digit',month:'long',year:'numeric'});
+ const hora = now.toLocaleTimeString('es-ES',{hour:'2-digit',minute:'2-digit'});
+ const histBody = document.getElementById('historyBody');
+ const histRowsEl = histBody ? Array.from(histBody.querySelectorAll('tr')).slice(0,10) : [];
+ const hasData = histRowsEl.length > 0 && !histBody.textContent.includes('Todav');
+ const histRows = hasData ? histRowsEl.map(function(r){
+   const cells = r.querySelectorAll('td');
+   if(cells.length < 3) return '';
+   const fecha = cells[0]?cells[0].textContent:'';
+   const mod = cells[1]?cells[1].textContent:'';
+   const tagEl = cells[3]?cells[3].querySelector('.tag'):null;
+   const tagClass = tagEl ? tagEl.className : 'tag tag-blue';
+   const res = tagEl ? tagEl.textContent : (cells[2]?cells[2].textContent:'');
+   return '<tr><td>'+fecha+'</td><td>'+mod+'</td><td><span class="'+tagClass+'">'+res+'</span></td></tr>';
+ }).join('') : '<tr><td colspan="3" style="text-align:center;color:#999;padding:20px">Sin análisis registrados</td></tr>';
+ const usagePct = Math.round((1-(credits/100))*100);
+ const content=`<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Informe Ejecutivo · Menarguez-IA Solutions</title>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Geist',system-ui,sans-serif;background:#f5f4f1;color:#111;line-height:1.6}
+.header{background:#3C3489;color:#fff;padding:40px;position:relative;overflow:hidden}
+.header::before{content:'';position:absolute;top:-80px;right:-80px;width:300px;height:300px;border-radius:50%;background:rgba(255,255,255,.06)}
+.header-tag{display:inline-block;font-size:10px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.2);border-radius:20px;padding:3px 12px;margin-bottom:14px}
+.header h1{font-size:28px;font-weight:700;letter-spacing:-.03em;margin-bottom:6px}
+.header p{font-size:13px;opacity:.7}
+.header-meta{display:flex;gap:28px;margin-top:20px;flex-wrap:wrap}
+.meta{font-size:12px;opacity:.65}.meta strong{opacity:1;color:#fff}
+.main{max-width:800px;margin:0 auto;padding:36px 24px 60px}
+.kpi-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:32px}
+@media(max-width:600px){.kpi-grid{grid-template-columns:1fr 1fr}}
+.kpi{background:#fff;border:1px solid #e5e4df;border-radius:12px;padding:18px;text-align:center}
+.kpi-val{font-size:36px;font-weight:700;letter-spacing:-.04em;margin-bottom:4px}
+.kpi-val.blue{color:#3C3489}.kpi-val.red{color:#A32D2D}.kpi-val.green{color:#1D9E75}.kpi-val.amber{color:#BA7517}
+.kpi-lbl{font-size:11px;color:#888;text-transform:uppercase;letter-spacing:.07em}
+.section{margin-bottom:28px}
+.sec-label{font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#999;margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.sec-label::after{content:'';flex:1;height:1px;background:#e5e4df}
+.card{background:#fff;border:1px solid #e5e4df;border-radius:12px;overflow:hidden;margin-bottom:12px}
+.bar-header{display:flex;justify-content:space-between;align-items:center;padding:14px 18px 10px}
+.bar-header span{font-size:13px;font-weight:500}
+.bar-header .pct{font-size:20px;font-weight:700;color:#3C3489}
+.bar-track{height:6px;background:#f0efe8;margin:0 18px 14px}
+.bar-fill{height:100%;background:#3C3489;border-radius:3px}
+table{width:100%;border-collapse:collapse}
+thead th{background:#f5f4f1;padding:10px 16px;text-align:left;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.07em;color:#888}
+tbody td{padding:12px 16px;font-size:13px;border-top:1px solid #f0efe8;color:#444}
+.tag{display:inline-block;font-size:10px;font-weight:600;padding:2px 9px;border-radius:20px}
+.tag-red{background:#FCEBEB;color:#A32D2D}
+.tag-green{background:#E1F5EE;color:#1D9E75}
+.tag-orange{background:#FAEEDA;color:#BA7517}
+.tag-blue{background:#EEEDFE;color:#3C3489}
+.status-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:16px}
+.status-item{background:#f5f4f1;border-radius:8px;padding:12px 14px;display:flex;align-items:center;gap:10px}
+.dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.dot.green{background:#1D9E75}.dot.amber{background:#BA7517}.dot.red{background:#A32D2D}
+.status-text{font-size:12px;color:#555}
+.footer{border-top:1px solid #e5e4df;padding:20px 0 0;margin-top:32px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px}
+.footer-brand{font-size:13px;font-weight:600;color:#111}
+.footer-brand span{color:#534AB7}
+.footer-sub{font-size:11px;color:#999}
+.footer-link{font-size:11px;color:#534AB7;text-decoration:none}
+@media print{body{background:#fff}}
+</style>
+</head>
+<body>
+<div class="header">
+ <div style="max-width:800px;margin:0 auto;position:relative;z-index:1">
+  <div class="header-tag">Informe Ejecutivo</div>
+  <h1>Menarguez-IA Solutions</h1>
+  <p>Resumen de actividad y estado operativo de la Suite</p>
+  <div class="header-meta">
+   <div class="meta"><strong>Fecha</strong> · ${fecha}</div>
+   <div class="meta"><strong>Hora</strong> · ${hora}</div>
+   <div class="meta"><strong>Generado por</strong> · Suite Menarguez-IA v2</div>
+  </div>
+ </div>
+</div>
+<div class="main">
+ <div class="section">
+  <div class="sec-label">Resumen de actividad</div>
+  <div class="kpi-grid">
+   <div class="kpi"><div class="kpi-val blue">${analysisCount}</div><div class="kpi-lbl">Análisis realizados</div></div>
+   <div class="kpi"><div class="kpi-val red">${riskCount}</div><div class="kpi-lbl">Riesgos detectados</div></div>
+   <div class="kpi"><div class="kpi-val green">${credits}</div><div class="kpi-lbl">Créditos restantes</div></div>
+   <div class="kpi"><div class="kpi-val amber">12</div><div class="kpi-lbl">Módulos activos</div></div>
+  </div>
+ </div>
+ <div class="section">
+  <div class="sec-label">Uso de créditos</div>
+  <div class="card">
+   <div class="bar-header"><span>Créditos consumidos este periodo</span><span class="pct">${usagePct}%</span></div>
+   <div class="bar-track"><div class="bar-fill" style="width:${usagePct}%"></div></div>
+  </div>
+ </div>
+ <div class="section">
+  <div class="sec-label">Historial de análisis</div>
+  <div class="card">
+   <table>
+    <thead><tr><th>Hora</th><th>Módulo</th><th>Resultado</th></tr></thead>
+    <tbody>${histRows}</tbody>
+   </table>
+  </div>
+ </div>
+ <div class="section">
+  <div class="sec-label">Estado de la suite</div>
+  <div class="card">
+   <div class="status-row">
+    <div class="status-item"><div class="dot green"></div><div class="status-text">API Claude · Operativa</div></div>
+    <div class="status-item"><div class="dot green"></div><div class="status-text">AI Detector · Activo</div></div>
+    <div class="status-item"><div class="dot green"></div><div class="status-text">SOC Assistant · Activo</div></div>
+    <div class="status-item"><div class="dot green"></div><div class="status-text">LinkedIn Optimizer · Activo</div></div>
+    <div class="status-item"><div class="dot amber"></div><div class="status-text">Marketplace · Próximamente</div></div>
+    <div class="status-item"><div class="dot amber"></div><div class="status-text">White-label · Próximamente</div></div>
+   </div>
+  </div>
+ </div>
+ <div class="footer">
+  <div>
+   <div class="footer-brand">Menarguez<span>-IA</span> Solutions</div>
+   <div class="footer-sub">IA · Ciberseguridad · Automatización · ai.menarguez-ia.com</div>
+  </div>
+  <a class="footer-link" href="https://ai.menarguez-ia.com">ai.menarguez-ia.com →</a>
+ </div>
+</div>
+</body>
+</html>`;
  const blob=new Blob([content],{type:'text/html'});
  const a=document.createElement('a');
  a.href=URL.createObjectURL(blob);
