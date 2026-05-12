@@ -1238,25 +1238,60 @@ function loadDetector(){
  toast('Ejemplo cargado');
 }
 
-function runDetector(){
- if(!$('detectorText').value.trim()){alert('Introduce un texto');return;}
+async function runDetector(){
+ const txt = $('detectorText').value.trim();
+ if(!txt){alert('Introduce un texto');return;}
  consume();
  usage.detector++;
- loading('detectorOutput',()=>{
-  const txt=$('detectorText').value.toLowerCase();
-  let human=58;
-  if(txt.includes('la verdad') || txt.includes('me ha')) human=84;
-  if(txt.includes('innovadoras') || txt.includes('estratégicas')) human=28;
-  const r=human<45?'ALTO':human<70?'MEDIO':'BAJO';
-  const cls=human<45?'tag-red':human<70?'tag-orange':'tag-green';
-  $('humanScore').textContent=human+'%';
-  $('aiRisk').textContent=r;
-  if(r==='ALTO') addRisk();
-  $('detectorOutput').innerHTML=`✔ Human Score: ${human}%<br>✔ Formalidad analizada<br>✔ Repetición y naturalidad revisadas<br><br><strong>Recomendación:</strong> ${human<45?'Humanizar antes de publicar.':'Apto con revisión ligera.'}`;
-  addHistory('AI Detector',r,cls);
+ $('detectorOutput').innerHTML='<div style="display:flex;align-items:center;gap:10px;color:var(--muted);padding:8px 0"><span style="display:inline-block;width:14px;height:14px;border:2px solid var(--brand2);border-top-color:transparent;border-radius:50%;animation:spin .7s linear infinite"></span> Analizando con IA...</div>';
+ $('humanScore').textContent='...';
+ $('aiRisk').textContent='...';
+ try {
+  const prompt = 'Eres un experto en deteccion de texto generado por IA. Analiza el siguiente texto.\n\nTEXTO:\n' + txt + '\n\nResponde UNICAMENTE con JSON valido sin markdown:\n{"human_score":numero 0-100,"verdict":"ALTO"|"MEDIO"|"BAJO","patrones":[{"nombre":"nombre corto","nivel":"alto"|"medio"|"bajo","descripcion":"max 60 chars"},{"nombre":"nombre corto","nivel":"alto"|"medio"|"bajo","descripcion":"max 60 chars"},{"nombre":"nombre corto","nivel":"alto"|"medio"|"bajo","descripcion":"max 60 chars"},{"nombre":"nombre corto","nivel":"alto"|"medio"|"bajo","descripcion":"max 60 chars"},{"nombre":"nombre corto","nivel":"alto"|"medio"|"bajo","descripcion":"max 60 chars"}],"recomendacion":"frase directa max 80 chars","resumen":"analisis en 2 frases mencionando patrones clave"}\n\nPatrones: repeticion lexica, variabilidad sintactica, formalidad excesiva, transiciones IA, impredecibilidad, cliches, referencias personales, errores naturales, burstiness, perplexidad. nivel alto=señal fuerte de IA.';
+  const resp = await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1000,messages:[{role:'user',content:prompt}]})});
+  const data = await resp.json();
+  const raw = data.content.map(function(i){return i.text||'';}).join('').replace(/```json|```/g,'').trim();
+  const r = JSON.parse(raw);
+  const human = r.human_score;
+  const verdict = r.verdict||(human<45?'ALTO':human<70?'MEDIO':'BAJO');
+  const cls = verdict==='ALTO'?'tag-red':verdict==='MEDIO'?'tag-orange':'tag-green';
+  const verdictColor = verdict==='ALTO'?'#E24B4A':verdict==='MEDIO'?'#EF9F27':'#1D9E75';
+  $('humanScore').textContent = human+'%';
+  $('aiRisk').textContent = verdict;
+  if(verdict==='ALTO') addRisk();
+  function nivelColor(n){return n==='alto'?'#E24B4A':n==='medio'?'#EF9F27':'#1D9E75';}
+  function nivelLabel(n){return n==='alto'?'ALTO':n==='medio'?'MEDIO':'BAJO';}
+  const barWidth = 100-human;
+  const patronesHTML = (r.patrones||[]).map(function(p){
+   return '<div style="display:flex;align-items:flex-start;gap:10px;padding:10px 12px;background:var(--panel);border-radius:8px;border:1px solid var(--line)">'
+    +'<div style="flex-shrink:0;margin-top:3px"><div style="width:8px;height:8px;border-radius:50%;background:'+nivelColor(p.nivel)+'"></div></div>'
+    +'<div style="flex:1;min-width:0">'
+    +'<div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:3px">'
+    +'<span style="font-size:12px;font-weight:600;color:var(--text)">'+p.nombre+'</span>'
+    +'<span style="font-size:10px;font-weight:700;padding:1px 7px;border-radius:20px;background:'+nivelColor(p.nivel)+'22;color:'+nivelColor(p.nivel)+';flex-shrink:0">'+nivelLabel(p.nivel)+'</span>'
+    +'</div>'
+    +'<div style="font-size:11px;color:var(--muted);line-height:1.4">'+p.descripcion+'</div>'
+    +'</div></div>';
+  }).join('');
+  $('detectorOutput').innerHTML =
+   '<div style="margin-bottom:14px">'
+   +'<div style="display:flex;justify-content:space-between;font-size:11px;color:var(--muted);margin-bottom:5px"><span>Humano</span><span>IA</span></div>'
+   +'<div style="height:6px;background:var(--line);border-radius:3px;overflow:hidden">'
+   +'<div style="height:100%;width:'+barWidth+'%;background:'+verdictColor+';border-radius:3px;transition:width .6s ease"></div></div>'
+   +'<div style="display:flex;justify-content:space-between;font-size:11px;color:var(--muted);margin-top:4px"><span>'+human+'% humano</span><span>'+barWidth+'% IA</span></div>'
+   +'</div>'
+   +'<div style="font-size:11px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);margin-bottom:10px">Patrones detectados</div>'
+   +'<div style="display:flex;flex-direction:column;gap:7px;margin-bottom:14px">'+patronesHTML+'</div>'
+   +'<div style="background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:12px;font-size:13px;color:var(--muted);line-height:1.6;margin-bottom:10px">'+r.resumen+'</div>'
+   +'<div style="font-size:13px"><strong style="color:var(--text)">Recomendacion:</strong> <span style="color:var(--muted)">'+r.recomendacion+'</span></div>';
+  addHistory('AI Detector',verdict,cls);
   updateBars();
   toast('AI Detector completado');
- });
+ } catch(e) {
+  $('detectorOutput').innerHTML='<span style="color:#E24B4A">Error: '+e.message+'</span>';
+  $('humanScore').textContent='-';
+  $('aiRisk').textContent='-';
+ }
 }
 
 function loadHumanizer(){
