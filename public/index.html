@@ -1248,8 +1248,24 @@ async function runDetector(){
  $('aiRisk').textContent='...';
  try {
   const prompt = 'Eres un experto en deteccion de texto generado por IA. Analiza el siguiente texto.\n\nTEXTO:\n' + txt + '\n\nResponde UNICAMENTE con JSON valido sin markdown:\n{"human_score":numero 0-100,"verdict":"ALTO"|"MEDIO"|"BAJO","patrones":[{"nombre":"nombre corto","nivel":"alto"|"medio"|"bajo","descripcion":"max 60 chars"},{"nombre":"nombre corto","nivel":"alto"|"medio"|"bajo","descripcion":"max 60 chars"},{"nombre":"nombre corto","nivel":"alto"|"medio"|"bajo","descripcion":"max 60 chars"},{"nombre":"nombre corto","nivel":"alto"|"medio"|"bajo","descripcion":"max 60 chars"},{"nombre":"nombre corto","nivel":"alto"|"medio"|"bajo","descripcion":"max 60 chars"}],"recomendacion":"frase directa max 80 chars","resumen":"analisis en 2 frases mencionando patrones clave"}\n\nPatrones: repeticion lexica, variabilidad sintactica, formalidad excesiva, transiciones IA, impredecibilidad, cliches, referencias personales, errores naturales, burstiness, perplexidad. nivel alto=señal fuerte de IA.';
-  const resp = await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1000,messages:[{role:'user',content:prompt}]})});
+  const resp = await fetch('/api/analyze',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1000,messages:[{role:'user',content:prompt}]})});
   const data = await resp.json();
+
+  // Handle rate limit errors
+  if(resp.status === 429) {
+   $('detectorOutput').innerHTML='<div style="background:#FAEEDA;border:1px solid #EF9F27;border-radius:8px;padding:14px 16px;color:#633806;font-size:13px;line-height:1.6">'
+    +'<strong>Limite alcanzado</strong><br>'+data.message+'</div>';
+   $('humanScore').textContent='-';
+   $('aiRisk').textContent='-';
+   return;
+  }
+
+  // Show remaining usage
+  if(data._usage) {
+   const rem = data._usage.daily_remaining;
+   $('activity').innerHTML = '📊 Análisis restantes hoy: <strong>'+rem+'/50</strong>';
+  }
+
   const raw = data.content.map(function(i){return i.text||'';}).join('').replace(/```json|```/g,'').trim();
   const r = JSON.parse(raw);
   const human = r.human_score;
