@@ -655,6 +655,10 @@ footer a{
  }
 }
 </style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script>
+if(typeof pdfjsLib !== 'undefined') pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+</script>
 </head>
 
 <body>
@@ -781,7 +785,15 @@ footer a{
    <section id="detector" class="module panel">
     <h2>AI Detector</h2>
     <p style="color:var(--muted)">Detecta patrones IA, naturalidad, formalidad y repetición.</p>
-    <textarea id="detectorText" placeholder="Pega aquí un texto..."></textarea>
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;flex-wrap:wrap">
+     <label style="display:flex;align-items:center;gap:6px;background:var(--panel2);border:1px solid var(--line);border-radius:8px;padding:7px 12px;cursor:pointer;font-size:12px;font-weight:500;color:var(--text)">
+      📎 Importar archivo
+      <input type="file" accept=".txt,.md,.html,.pdf" style="display:none" onchange="importFile(this,'detectorText','detectorCharCount')">
+     </label>
+     <span style="font-size:11px;color:var(--muted)">TXT · MD · HTML · PDF</span>
+     <span id="detectorCharCount" style="font-size:11px;color:var(--muted);margin-left:auto">0 / 50.000 car.</span>
+    </div>
+    <textarea id="detectorText" placeholder="Pega aquí un texto o importa un archivo..." oninput="updateCharCount(this,'detectorCharCount')"></textarea>
     <div class="actions">
      <button class="btn primary" type="button" data-action="run-detector">Analizar</button>
      <button class="btn" type="button" data-action="load-detector">Ejemplo</button>
@@ -804,7 +816,15 @@ footer a{
      <option>Email comercial</option>
     </select>
     <br><br>
-    <textarea id="humanizerText" placeholder="Pega aquí un texto..."></textarea>
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;flex-wrap:wrap">
+     <label style="display:flex;align-items:center;gap:6px;background:var(--panel2);border:1px solid var(--line);border-radius:8px;padding:7px 12px;cursor:pointer;font-size:12px;font-weight:500;color:var(--text)">
+      📎 Importar archivo
+      <input type="file" accept=".txt,.md,.html,.pdf" style="display:none" onchange="importFile(this,'humanizerText','humanizerCharCount')">
+     </label>
+     <span style="font-size:11px;color:var(--muted)">TXT · MD · HTML · PDF</span>
+     <span id="humanizerCharCount" style="font-size:11px;color:var(--muted);margin-left:auto">0 / 50.000 car.</span>
+    </div>
+    <textarea id="humanizerText" placeholder="Pega aquí el texto generado por IA o importa un archivo..." oninput="updateCharCount(this,'humanizerCharCount')"></textarea>
     <div class="actions">
      <button class="btn primary" type="button" data-action="run-humanizer">Humanizar</button>
      <button class="btn" type="button" data-action="load-humanizer">Ejemplo</button>
@@ -1142,6 +1162,87 @@ function showApiExample(key) {
   }
 }
 
+// File import function
+const MAX_CHARS = 50000;
+
+function updateCharCount(textarea, counterId) {
+ const len = textarea.value.length;
+ const el = document.getElementById(counterId);
+ if(!el) return;
+ el.textContent = len.toLocaleString('es-ES') + ' / 50.000 caracteres';
+ el.style.color = len > MAX_CHARS ? '#E24B4A' : len > 40000 ? '#EF9F27' : 'var(--muted)';
+}
+
+async function importFile(input, textareaId, counterId) {
+ const file = input.files[0];
+ if(!file) return;
+ const ta = document.getElementById(textareaId);
+ const MAX_SIZE = 5 * 1024 * 1024; // 5MB max file size
+
+ if(file.size > MAX_SIZE) {
+  toast('Archivo demasiado grande. Máximo 5MB.');
+  return;
+ }
+
+ toast('Cargando archivo...');
+
+ try {
+  let text = '';
+
+  if(file.type === 'application/pdf' || file.name.endsWith('.pdf')) {
+   // PDF extraction with PDF.js
+   if(typeof pdfjsLib === 'undefined') {
+    toast('Error: PDF.js no disponible. Recarga la página.');
+    return;
+   }
+   const arrayBuffer = await file.arrayBuffer();
+   const pdf = await pdfjsLib.getDocument({data: arrayBuffer}).promise;
+   const pages = [];
+   for(let i = 1; i <= pdf.numPages; i++) {
+    const page = await pdf.getPage(i);
+    const textContent = await page.getTextContent();
+    const pageText = textContent.items.map(function(item){ return item.str; }).join(' ');
+    pages.push(pageText);
+   }
+   text = pages.join('\n\n');
+   if(!text.trim()) {
+    toast('PDF sin texto seleccionable. Solo funciona con PDFs con texto, no escaneados.');
+    return;
+   }
+  } else {
+   // TXT, MD, HTML
+   text = await file.text();
+   if(file.name.endsWith('.html') || file.type === 'text/html') {
+    // Extract visible text from HTML
+    const div = document.createElement('div');
+    div.innerHTML = text;
+    // Remove scripts and styles
+    div.querySelectorAll('script,style,nav,header,footer').forEach(function(el){ el.remove(); });
+    text = div.innerText || div.textContent || '';
+   }
+  }
+
+  // Clean up extra whitespace
+  text = text.replace(/\r\n/g,'\n').replace(/\n{3,}/g,'\n\n').trim();
+
+  // Truncate if too long
+  if(text.length > MAX_CHARS) {
+   text = text.substring(0, MAX_CHARS);
+   toast('Texto truncado a 50.000 caracteres para controlar costes.');
+  } else {
+   toast('Archivo cargado: ' + file.name + ' (' + text.length.toLocaleString('es-ES') + ' caracteres)');
+  }
+
+  ta.value = text;
+  updateCharCount(ta, counterId);
+  input.value = ''; // Reset input so same file can be loaded again
+
+ } catch(e) {
+  toast('Error al leer el archivo: ' + e.message);
+  console.error(e);
+ }
+}
+
 // Load persisted state from localStorage
 function loadState() {
  try {
@@ -1268,6 +1369,7 @@ function loadDetector(){
 async function runDetector(){
  const txt = $('detectorText').value.trim();
  if(!txt){alert('Introduce un texto');return;}
+ if(txt.length > MAX_CHARS){alert('El texto supera los 50.000 caracteres. Por favor reduce el contenido antes de analizar.');return;}
  consume();
  usage.detector++;
  $('detectorOutput').innerHTML='<div style="display:flex;align-items:center;gap:10px;color:var(--muted);padding:8px 0"><span style="display:inline-block;width:14px;height:14px;border:2px solid var(--brand2);border-top-color:transparent;border-radius:50%;animation:spin .7s linear infinite"></span> Analizando con IA...</div>';
@@ -1383,6 +1485,7 @@ function loadHumanizer(){
 async function runHumanizer(){
  const txt = $('humanizerText').value.trim();
  if(!txt){alert('Introduce un texto');return;}
+ if(txt.length > MAX_CHARS){alert('El texto supera los 50.000 caracteres. Por favor reduce el contenido antes de humanizar.');return;}
  consume();
  const tone = $('tone').value;
  $('humanizerOutput').innerHTML='<div style="display:flex;align-items:center;gap:10px;color:var(--muted);padding:8px 0"><span style="display:inline-block;width:14px;height:14px;border:2px solid var(--brand2);border-top-color:transparent;border-radius:50%;animation:spin .7s linear infinite"></span> Humanizando texto...</div>';
