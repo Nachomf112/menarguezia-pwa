@@ -1429,6 +1429,12 @@ async function runHumanizer(){
  }
 }
 
+function copyLinkedin(){
+ if(window._lastLinkedin){
+  navigator.clipboard.writeText(window._lastLinkedin).then(function(){toast('Copiado al portapapeles');});
+ }
+}
+
 function copyHumanized(){
  if(window._lastHumanized){
   navigator.clipboard.writeText(window._lastHumanized).then(function(){toast('Copiado al portapapeles');});
@@ -1440,12 +1446,27 @@ function loadLinkedin(){
  toast('Ejemplo cargado');
 }
 
-function runLinkedin(){
- if(!$('linkedinText').value.trim()){alert('Introduce una idea');return;}
+async function runLinkedin(){
+ const txt = $('linkedinText').value.trim();
+ if(!txt){alert('Introduce una idea');return;}
  consume();
- $('linkedinOutput').innerHTML=`🚀 La IA no viene solo a automatizar tareas.<br><br>Viene a devolver tiempo a las personas.<br><br>✅ menos trabajo manual<br>✅ más foco<br>✅ más productividad<br><br><strong>Primer comentario:</strong><br>La clave no es usar IA por moda, sino aplicarla donde realmente ahorra tiempo.<br><br>#IA #Automatizacion #Empresas`;
- addHistory('LinkedIn','OPTIMIZADO','tag-green');
- toast('Post optimizado');
+ $('linkedinOutput').innerHTML='<div style="display:flex;align-items:center;gap:10px;color:var(--muted);padding:8px 0"><span style="display:inline-block;width:14px;height:14px;border:2px solid var(--brand2);border-top-color:transparent;border-radius:50%;animation:spin .7s linear infinite"></span> Generando post...</div>';
+ try {
+  const prompt = 'Eres un experto en LinkedIn con miles de seguidores. Convierte la siguiente idea en un post viral de LinkedIn en español.\n\nREGLAS:\n- Empieza con un gancho potente en la primera línea\n- Usa saltos de línea cortos para facilitar la lectura en móvil\n- Añade entre 3 y 5 emojis relevantes\n- Incluye entre 3 y 5 hashtags al final\n- Tono auténtico y personal, no corporativo\n- Máximo 1300 caracteres\n- Incluye al final un comentario de primer comentario para aumentar el alcance\n\nIDEA:\n' + txt + '\n\nResponde ÚNICAMENTE con el post listo para publicar, sin explicaciones.';
+  const resp = await fetch('/api/analyze',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:800,messages:[{role:'user',content:prompt}]})});
+  const data = await resp.json();
+  if(resp.status===429){$('linkedinOutput').innerHTML='<div style="background:#FAEEDA;border:1px solid #EF9F27;border-radius:8px;padding:14px;color:#633806;font-size:13px">'+data.message+'</div>';return;}
+  const post = data.content.map(function(i){return i.text||'';}).join('').trim();
+  window._lastLinkedin = post;
+  $('linkedinOutput').innerHTML =
+   '<div style="background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:16px;font-size:13px;line-height:1.8;white-space:pre-wrap;margin-bottom:12px">'+post+'</div>'
+   +'<div style="display:flex;gap:8px;flex-wrap:wrap">'
+   +'<button onclick="copyLinkedin()" style="background:var(--brand,#3C3489);color:#fff;border:none;border-radius:8px;padding:8px 16px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit">📋 Copiar post</button>'
+   +'<span style="font-size:11px;color:var(--muted);align-self:center">'+post.length+' caracteres</span>'
+   +'</div>';
+  addHistory('LinkedIn','OPTIMIZADO','tag-green');
+  toast('Post generado');
+ } catch(e){$('linkedinOutput').innerHTML='<span style="color:#E24B4A">Error: '+e.message+'</span>';}
 }
 
 function loadReputation(){
@@ -1453,15 +1474,37 @@ function loadReputation(){
  toast('Ejemplo cargado');
 }
 
-function runReputation(){
- if(!$('reputationText').value.trim()){alert('Introduce comentario');return;}
+async function runReputation(){
+ const txt = $('reputationText').value.trim();
+ if(!txt){alert('Introduce comentario');return;}
  consume();
  usage.rep++;
- addRisk();
- $('reputationOutput').innerHTML='⚠ Riesgo reputacional ALTO<br><br>• Tono negativo detectado<br>• Urgencia alta<br>• Respuesta sugerida: lamentamos la experiencia, revisamos el caso y contactamos contigo por privado.';
- addHistory('Reputation','RIESGO','tag-red');
- updateBars();
- toast('Riesgo reputacional detectado');
+ $('reputationOutput').innerHTML='<div style="display:flex;align-items:center;gap:10px;color:var(--muted);padding:8px 0"><span style="display:inline-block;width:14px;height:14px;border:2px solid var(--brand2);border-top-color:transparent;border-radius:50%;animation:spin .7s linear infinite"></span> Analizando reputación...</div>';
+ try {
+  const prompt = 'Eres un experto en gestión de reputación online y crisis de comunicación. Analiza el siguiente comentario o reseña.\n\nCOMENTARIO:\n' + txt + '\n\nResponde ÚNICAMENTE con JSON válido sin markdown:\n{"riesgo":"ALTO"|"MEDIO"|"BAJO","sentimiento":"muy negativo"|"negativo"|"neutro"|"positivo","es_fake":true|false,"urgencia":"inmediata"|"alta"|"media"|"baja","senales":["señal 1","señal 2","señal 3"],"respuesta_sugerida":"respuesta pública profesional y empática max 200 chars","accion_interna":"acción interna recomendada max 100 chars","resumen":"análisis en 2 frases"}';
+  const resp = await fetch('/api/analyze',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:600,messages:[{role:'user',content:prompt}]})});
+  const data = await resp.json();
+  if(resp.status===429){$('reputationOutput').innerHTML='<div style="background:#FAEEDA;border:1px solid #EF9F27;border-radius:8px;padding:14px;color:#633806;font-size:13px">'+data.message+'</div>';return;}
+  const raw = data.content.map(function(i){return i.text||'';}).join('').replace(/```json|```/g,'').trim();
+  const r = JSON.parse(raw);
+  const rColor = r.riesgo==='ALTO'?'#E24B4A':r.riesgo==='MEDIO'?'#EF9F27':'#1D9E75';
+  const rBg = r.riesgo==='ALTO'?'#FCEBEB':r.riesgo==='MEDIO'?'#FAEEDA':'#E1F5EE';
+  if(r.riesgo==='ALTO'||r.riesgo==='MEDIO') addRisk();
+  const cls = r.riesgo==='ALTO'?'tag-red':r.riesgo==='MEDIO'?'tag-orange':'tag-green';
+  const senalesHTML = (r.senales||[]).map(function(s){return '<div style="font-size:12px;color:var(--muted);padding:4px 0;border-bottom:1px solid var(--line)">• '+s+'</div>';}).join('');
+  $('reputationOutput').innerHTML =
+   '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:14px">'
+   +'<div style="background:'+rBg+';border-radius:8px;padding:10px;text-align:center"><div style="font-size:10px;color:'+rColor+';font-weight:700;text-transform:uppercase;margin-bottom:3px">Riesgo</div><div style="font-size:16px;font-weight:700;color:'+rColor+'">'+r.riesgo+'</div></div>'
+   +'<div style="background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:10px;text-align:center"><div style="font-size:10px;color:var(--muted);font-weight:700;text-transform:uppercase;margin-bottom:3px">Urgencia</div><div style="font-size:13px;font-weight:600;color:var(--text)">'+r.urgencia+'</div></div>'
+   +'<div style="background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:10px;text-align:center"><div style="font-size:10px;color:var(--muted);font-weight:700;text-transform:uppercase;margin-bottom:3px">¿Fake?</div><div style="font-size:13px;font-weight:600;color:'+(r.es_fake?'#E24B4A':'#1D9E75')+'">'+(r.es_fake?'Posible':'No detectado')+'</div></div>'
+   +'</div>'
+   +'<div style="background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:12px;margin-bottom:10px">'+senalesHTML+'</div>'
+   +'<div style="margin-bottom:10px"><div style="font-size:10px;font-weight:700;text-transform:uppercase;color:var(--muted);margin-bottom:6px">Respuesta sugerida</div><div style="background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:12px;font-size:13px;color:var(--text);line-height:1.6;font-style:italic">'+r.respuesta_sugerida+'</div></div>'
+   +'<div style="font-size:13px;color:var(--muted);line-height:1.6">'+r.resumen+'</div>';
+  addHistory('Reputation',r.riesgo,cls);
+  updateBars();
+  toast('Análisis reputacional completado');
+ } catch(e){$('reputationOutput').innerHTML='<span style="color:#E24B4A">Error: '+e.message+'</span>';}
 }
 
 function loadSOC(){
@@ -1469,15 +1512,39 @@ function loadSOC(){
  toast('Ejemplo cargado');
 }
 
-function runSOC(){
- if(!$('socText').value.trim()){alert('Introduce logs');return;}
+async function runSOC(){
+ const txt = $('socText').value.trim();
+ if(!txt){alert('Introduce logs');return;}
  consume();
  usage.soc++;
- addRisk();
- $('socOutput').innerHTML='<strong>Resumen SOC:</strong><br><br>• Posible fuerza bruta<br>• Severidad MEDIA-ALTA<br>• IOC: 192.168.1.55<br>• Acción: bloquear IP, revisar logs y activar MFA.';
- addHistory('SOC Assistant','ALERTA','tag-red');
- updateBars();
- toast('Alerta SOC generada');
+ $('socOutput').innerHTML='<div style="display:flex;align-items:center;gap:10px;color:var(--muted);padding:8px 0"><span style="display:inline-block;width:14px;height:14px;border:2px solid var(--brand2);border-top-color:transparent;border-radius:50%;animation:spin .7s linear infinite"></span> Analizando logs...</div>';
+ try {
+  const prompt = 'Eres un analista SOC / Blue Team experto en ciberseguridad. Analiza el siguiente log o evento de seguridad.\n\nLOG:\n' + txt + '\n\nResponde ÚNICAMENTE con JSON válido sin markdown:\n{"amenaza":"nombre de la amenaza","severidad":"CRITICA"|"ALTA"|"MEDIA"|"BAJA","mitre_tecnica":"ID y nombre MITRE ATT&CK","ioc":["ioc1","ioc2"],"acciones":["accion1","accion2","accion3"],"explicacion":"explicación técnica en 2 frases","falso_positivo":true|false,"confianza":numero 0-100}';
+  const resp = await fetch('/api/analyze',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:600,messages:[{role:'user',content:prompt}]})});
+  const data = await resp.json();
+  if(resp.status===429){$('socOutput').innerHTML='<div style="background:#FAEEDA;border:1px solid #EF9F27;border-radius:8px;padding:14px;color:#633806;font-size:13px">'+data.message+'</div>';return;}
+  const raw = data.content.map(function(i){return i.text||'';}).join('').replace(/```json|```/g,'').trim();
+  const r = JSON.parse(raw);
+  const sevColor = r.severidad==='CRITICA'?'#A32D2D':r.severidad==='ALTA'?'#E24B4A':r.severidad==='MEDIA'?'#EF9F27':'#1D9E75';
+  const sevBg = r.severidad==='CRITICA'?'#FCEBEB':r.severidad==='ALTA'?'#FCEBEB':r.severidad==='MEDIA'?'#FAEEDA':'#E1F5EE';
+  const cls = r.severidad==='CRITICA'||r.severidad==='ALTA'?'tag-red':r.severidad==='MEDIA'?'tag-orange':'tag-green';
+  if(r.severidad==='CRITICA'||r.severidad==='ALTA') addRisk();
+  const iocHTML = (r.ioc||[]).map(function(i){return '<span style="font-family:monospace;font-size:11px;background:var(--bg);border:1px solid var(--line);border-radius:4px;padding:2px 7px;color:#E24B4A">'+i+'</span>';}).join(' ');
+  const accionesHTML = (r.acciones||[]).map(function(a,i){return '<div style="display:flex;gap:8px;padding:8px 0;border-bottom:1px solid var(--line);font-size:12px"><span style="background:var(--brand,#3C3489);color:#fff;width:18px;height:18px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;flex-shrink:0">'+(i+1)+'</span><span style="color:var(--text)">'+a+'</span></div>';}).join('');
+  $('socOutput').innerHTML =
+   '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px">'
+   +'<div style="background:'+sevBg+';border-radius:8px;padding:12px"><div style="font-size:10px;color:'+sevColor+';font-weight:700;text-transform:uppercase;margin-bottom:3px">Amenaza</div><div style="font-size:13px;font-weight:600;color:'+sevColor+'">'+r.amenaza+'</div></div>'
+   +'<div style="background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:12px"><div style="font-size:10px;color:var(--muted);font-weight:700;text-transform:uppercase;margin-bottom:3px">Severidad · Confianza</div><div style="font-size:13px;font-weight:700;color:'+sevColor+'">'+r.severidad+'</div><div style="font-size:11px;color:var(--muted)">'+r.confianza+'% confianza</div></div>'
+   +'</div>'
+   +'<div style="background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:12px;margin-bottom:10px"><div style="font-size:10px;font-weight:700;text-transform:uppercase;color:var(--muted);margin-bottom:6px">MITRE ATT&CK</div><div style="font-size:12px;font-weight:600;color:var(--text)">'+r.mitre_tecnica+'</div></div>'
+   +(r.ioc&&r.ioc.length?'<div style="margin-bottom:10px"><div style="font-size:10px;font-weight:700;text-transform:uppercase;color:var(--muted);margin-bottom:6px">IOCs detectados</div><div style="display:flex;gap:6px;flex-wrap:wrap">'+iocHTML+'</div></div>':'')
+   +'<div style="margin-bottom:10px"><div style="font-size:10px;font-weight:700;text-transform:uppercase;color:var(--muted);margin-bottom:6px">Acciones recomendadas</div>'+accionesHTML+'</div>'
+   +'<div style="font-size:13px;color:var(--muted);line-height:1.6">'+r.explicacion+'</div>'
+   +(r.falso_positivo?'<div style="margin-top:10px;background:#FAEEDA;border:1px solid #EF9F27;border-radius:8px;padding:10px;font-size:12px;color:#633806">⚠ Posible falso positivo — verificar antes de actuar</div>':'');
+  addHistory('SOC Assistant',r.severidad,cls);
+  updateBars();
+  toast('Análisis SOC completado');
+ } catch(e){$('socOutput').innerHTML='<span style="color:#E24B4A">Error: '+e.message+'</span>';}
 }
 
 function loadCompliance(){
@@ -1485,12 +1552,37 @@ function loadCompliance(){
  toast('Ejemplo cargado');
 }
 
-function runCompliance(){
- if(!$('complianceText').value.trim()){alert('Describe el uso');return;}
+async function runCompliance(){
+ const txt = $('complianceText').value.trim();
+ if(!txt){alert('Describe el uso');return;}
  consume();
- $('complianceOutput').innerHTML='⚖ Evaluación inicial:<br><br>• Riesgo RGPD: medio<br>• Requiere base legal y minimización de datos<br>• Recomendado: registro de prompts, revisión humana y política interna de uso IA.';
- addHistory('AI Compliance','REVISIÓN','tag-orange');
- toast('Compliance evaluado');
+ $('complianceOutput').innerHTML='<div style="display:flex;align-items:center;gap:10px;color:var(--muted);padding:8px 0"><span style="display:inline-block;width:14px;height:14px;border:2px solid var(--brand2);border-top-color:transparent;border-radius:50%;animation:spin .7s linear infinite"></span> Evaluando compliance...</div>';
+ try {
+  const prompt = 'Eres un experto en cumplimiento normativo de IA, RGPD, Ley de IA de la UE y protección de datos. Evalúa el siguiente caso de uso de IA.\n\nCASO DE USO:\n' + txt + '\n\nResponde ÚNICAMENTE con JSON válido sin markdown:\n{"riesgo_rgpd":"ALTO"|"MEDIO"|"BAJO","riesgo_ley_ia":"ALTO"|"MEDIO"|"BAJO"|"NO APLICA","base_legal":"base legal recomendada","datos_personales":true|false,"requiere_dpia":true|false,"recomendaciones":["rec1","rec2","rec3","rec4"],"semaforo":"VERDE"|"AMARILLO"|"ROJO","resumen":"evaluación en 2-3 frases con los puntos críticos"}';
+  const resp = await fetch('/api/analyze',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:600,messages:[{role:'user',content:prompt}]})});
+  const data = await resp.json();
+  if(resp.status===429){$('complianceOutput').innerHTML='<div style="background:#FAEEDA;border:1px solid #EF9F27;border-radius:8px;padding:14px;color:#633806;font-size:13px">'+data.message+'</div>';return;}
+  const raw = data.content.map(function(i){return i.text||'';}).join('').replace(/```json|```/g,'').trim();
+  const r = JSON.parse(raw);
+  const sColor = r.semaforo==='ROJO'?'#E24B4A':r.semaforo==='AMARILLO'?'#EF9F27':'#1D9E75';
+  const sBg = r.semaforo==='ROJO'?'#FCEBEB':r.semaforo==='AMARILLO'?'#FAEEDA':'#E1F5EE';
+  const cls = r.semaforo==='ROJO'?'tag-red':r.semaforo==='AMARILLO'?'tag-orange':'tag-green';
+  const recsHTML = (r.recomendaciones||[]).map(function(rec,i){return '<div style="display:flex;gap:8px;padding:8px 0;border-bottom:1px solid var(--line);font-size:12px"><span style="background:var(--brand,#3C3489);color:#fff;width:18px;height:18px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;flex-shrink:0">'+(i+1)+'</span><span style="color:var(--text)">'+rec+'</span></div>';}).join('');
+  $('complianceOutput').innerHTML =
+   '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:14px">'
+   +'<div style="background:'+sBg+';border-radius:8px;padding:10px;text-align:center"><div style="font-size:20px;margin-bottom:4px">'+(r.semaforo==='ROJO'?'🔴':r.semaforo==='AMARILLO'?'🟡':'🟢')+'</div><div style="font-size:11px;font-weight:700;color:'+sColor+'">'+r.semaforo+'</div></div>'
+   +'<div style="background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:10px;text-align:center"><div style="font-size:10px;color:var(--muted);font-weight:700;margin-bottom:3px">RGPD</div><div style="font-size:13px;font-weight:700;color:'+(r.riesgo_rgpd==='ALTO'?'#E24B4A':r.riesgo_rgpd==='MEDIO'?'#EF9F27':'#1D9E75')+'">'+r.riesgo_rgpd+'</div></div>'
+   +'<div style="background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:10px;text-align:center"><div style="font-size:10px;color:var(--muted);font-weight:700;margin-bottom:3px">Ley IA UE</div><div style="font-size:13px;font-weight:700;color:'+(r.riesgo_ley_ia==='ALTO'?'#E24B4A':r.riesgo_ley_ia==='MEDIO'?'#EF9F27':'#1D9E75')+'">'+r.riesgo_ley_ia+'</div></div>'
+   +'</div>'
+   +'<div style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap">'
+   +'<div style="background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:8px 12px;font-size:12px"><span style="color:var(--muted)">Base legal: </span><strong>'+r.base_legal+'</strong></div>'
+   +'<div style="background:'+(r.requiere_dpia?'#FCEBEB':'#E1F5EE')+';border:1px solid '+(r.requiere_dpia?'#F09595':'#5DCAA5')+';border-radius:8px;padding:8px 12px;font-size:12px;color:'+(r.requiere_dpia?'#A32D2D':'#1D9E75')+'"><strong>'+(r.requiere_dpia?'⚠ Requiere DPIA':'✓ No requiere DPIA')+'</strong></div>'
+   +'</div>'
+   +'<div style="margin-bottom:12px"><div style="font-size:10px;font-weight:700;text-transform:uppercase;color:var(--muted);margin-bottom:6px">Recomendaciones</div>'+recsHTML+'</div>'
+   +'<div style="font-size:13px;color:var(--muted);line-height:1.6">'+r.resumen+'</div>';
+  addHistory('AI Compliance',r.semaforo,cls);
+  toast('Compliance evaluado');
+ } catch(e){$('complianceOutput').innerHTML='<span style="color:#E24B4A">Error: '+e.message+'</span>';}
 }
 
 function simulateWorkflow(){
