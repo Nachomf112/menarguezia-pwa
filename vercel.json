@@ -1,9 +1,4 @@
 {
-  "rewrites": [
-    { "source": "/api/analyze", "destination": "/api/analyze.js" },
-    { "source": "/api/log-access", "destination": "/api/log-access.js" },
-    { "source": "/api/get-access", "destination": "/api/get-access.js" }
-  ],
   "headers": [
     {
       "source": "/.well-known/assetlinks.json",
