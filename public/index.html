@@ -674,15 +674,9 @@ if(typeof pdfjsLib !== 'undefined') pdfjsLib.GlobalWorkerOptions.workerSrc = 'ht
    </div>
   </div>
 
-  <input id="loginName" placeholder="Nombre de usuario" value="Nacho Menarguez">
+  <input id="loginName" placeholder="Tu nombre y apellido" value="">
   <br><br>
-
-  <select id="loginCompany">
-   <option>Menarguez-IA Solutions</option>
-   <option>Clínica Dental Demo</option>
-   <option>Restaurante Demo</option>
-   <option>Consultora Demo</option>
-  </select>
+  <input id="loginCompany" placeholder="Nombre de tu empresa" value="" style="width:100%;padding:10px 14px;border-radius:10px;border:1px solid var(--line);background:var(--panel2);color:var(--text);font-family:inherit;font-size:14px;outline:none">
 
   <div class="actions">
    <button class="btn primary" type="button" data-action="login">Entrar al Command Center</button>
@@ -1312,7 +1306,7 @@ function showModule(id){
 
 function login(){
  const n=$('loginName').value || 'Usuario';
- const c=$('loginCompany').value;
+ const c=$('loginCompany').value || 'No especificada';
  $('login').style.display='none';
  document.body.style.overflow='';
  toast('Sesión iniciada: '+n+' · '+c);
