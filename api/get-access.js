@@ -29,12 +29,13 @@ export default async function handler(req, res) {
     }
 
     const entries = data.result.map(item => {
-      try {
-        return typeof item === 'string' ? JSON.parse(item) : item;
-      } catch {
-        return null;
-      }
-    }).filter(Boolean);
+  try {
+    const parsed = typeof item === 'string' ? JSON.parse(item) : item;
+    return Array.isArray(parsed) ? parsed[0] : parsed;
+  } catch {
+    return null;
+  }
+}).filter(Boolean);
 
     return res.status(200).json({ ok: true, entries, total: entries.length });
 
