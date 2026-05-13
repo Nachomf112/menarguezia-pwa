@@ -40,16 +40,24 @@ export default async function handler(req, res) {
       return res.status(500).json({ error: 'Upstash no configurado' });
     }
 
-    // Push to a list (max 500 entries)
-    await fetch(`${url}/lpush/accesos/${encodeURIComponent(JSON.stringify(entry))}`, {
-      method: 'GET',
-      headers: { Authorization: `Bearer ${token}` }
+    // Correct Upstash REST API format for lpush
+    await fetch(`${url}/lpush/accesos`, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify([entry])
     });
 
-    // Trim list to last 500
-    await fetch(`${url}/ltrim/accesos/0/499`, {
-      method: 'GET',
-      headers: { Authorization: `Bearer ${token}` }
+    // Trim to last 200 entries
+    await fetch(`${url}/ltrim/accesos/0/199`, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify([0, 199])
     });
 
     return res.status(200).json({ ok: true });
