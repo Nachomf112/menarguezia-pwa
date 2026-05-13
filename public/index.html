@@ -1342,13 +1342,59 @@ function loadHumanizer(){
  toast('Ejemplo cargado');
 }
 
-function runHumanizer(){
- if(!$('humanizerText').value.trim()){alert('Introduce un texto');return;}
+async function runHumanizer(){
+ const txt = $('humanizerText').value.trim();
+ if(!txt){alert('Introduce un texto');return;}
  consume();
- const tone=$('tone').value;
- $('humanizerOutput').innerHTML=`<strong>Tono: ${tone}</strong><br><br>La verdad es que muchas empresas ya están usando IA para ahorrar tiempo, trabajar mejor y evitar tareas repetitivas que no aportan demasiado valor.`;
- addHistory('Humanizer','COMPLETADO','tag-green');
- toast('Texto humanizado');
+ const tone = $('tone').value;
+ $('humanizerOutput').innerHTML='<div style="display:flex;align-items:center;gap:10px;color:var(--muted);padding:8px 0"><span style="display:inline-block;width:14px;height:14px;border:2px solid var(--brand2);border-top-color:transparent;border-radius:50%;animation:spin .7s linear infinite"></span> Humanizando texto...</div>';
+
+ try {
+  const toneDesc = tone==='Profesional'?'profesional pero cercano, sin jerga corporativa':tone==='Cercano'?'casual, cálido y conversacional, como si lo escribiera un amigo':tone==='LinkedIn'?'auténtico para LinkedIn, personal y directo, con personalidad real':'natural y humano';
+
+  const prompt = 'Eres un experto en reescribir textos generados por IA para que suenen auténticamente humanos. Reescribe el siguiente texto con tono ' + toneDesc + '.\n\nREGLAS:\n- Mantén el mensaje principal pero cambia la estructura\n- Añade imperfecciones naturales y variación de ritmo\n- Elimina clichés corporativos y frases hechas\n- Usa vocabulario más concreto y menos abstracto\n- Varía la longitud de las frases\n- Si es apropiado, añade alguna opinión o experiencia personal\n- El resultado debe parecer escrito por una persona real\n\nTEXTO ORIGINAL:\n' + txt + '\n\nResponde ÚNICAMENTE con el texto reescrito, sin explicaciones ni comentarios.';
+
+  const resp = await fetch('/api/analyze', {
+   method: 'POST',
+   headers: {'Content-Type':'application/json'},
+   body: JSON.stringify({model:'claude-sonnet-4-20250514', max_tokens:1000, messages:[{role:'user',content:prompt}]})
+  });
+
+  const data = await resp.json();
+
+  if(resp.status===429){
+   $('humanizerOutput').innerHTML='<div style="background:#FAEEDA;border:1px solid #EF9F27;border-radius:8px;padding:14px;color:#633806;font-size:13px">'+data.message+'</div>';
+   return;
+  }
+
+  const humanized = data.content.map(function(i){return i.text||'';}).join('').trim();
+
+  // Count word changes (approximate)
+  const wordsOrig = txt.split(/\s+/).length;
+  const wordsNew = humanized.split(/\s+/).length;
+
+  $('humanizerOutput').innerHTML =
+   '<div style="margin-bottom:12px;display:flex;gap:8px;align-items:center">'
+   +'<span style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--muted)">Tono:</span>'
+   +'<span style="font-size:11px;font-weight:600;padding:2px 10px;border-radius:20px;background:var(--brand-light,#EEEDFE);color:var(--brand,#3C3489)">'+tone+'</span>'
+   +'<span style="font-size:11px;color:var(--muted);margin-left:auto">'+wordsOrig+' → '+wordsNew+' palabras</span>'
+   +'</div>'
+   +'<div style="background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:16px;font-size:13px;line-height:1.8;color:var(--text);white-space:pre-wrap;margin-bottom:12px">'+humanized+'</div>'
+   +'<button onclick="copyHumanized()" style="background:var(--brand,#3C3489);color:#fff;border:none;border-radius:8px;padding:8px 16px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit">📋 Copiar texto</button>';
+  window._lastHumanized = humanized;
+
+  addHistory('Humanizer','COMPLETADO','tag-green');
+  toast('Texto humanizado');
+
+ } catch(e) {
+  $('humanizerOutput').innerHTML='<span style="color:#E24B4A">Error: '+e.message+'</span>';
+ }
+}
+
+function copyHumanized(){
+ if(window._lastHumanized){
+  navigator.clipboard.writeText(window._lastHumanized).then(function(){toast('Copiado al portapapeles');});
+ }
 }
 
 function loadLinkedin(){
