@@ -27,15 +27,17 @@ export default async function handler(req, res) {
     if (!data.result) {
       return res.status(200).json({ ok: true, entries: [], total: 0, raw: data });
     }
-
+ 
     const entries = data.result.map(item => {
-  try {
-    const parsed = typeof item === 'string' ? JSON.parse(item) : item;
-    return Array.isArray(parsed) ? parsed[0] : parsed;
-  } catch {
-    return null;
-  }
-}).filter(Boolean);
+      try {
+        const parsed = typeof item === 'string' ? JSON.parse(item) : item;
+        const obj = Array.isArray(parsed) ? parsed[0] : parsed;
+        if (!obj || !obj.nombre) return null;
+        return obj;
+      } catch {
+        return null;
+      }
+    }).filter(Boolean);
 
     return res.status(200).json({ ok: true, entries, total: entries.length });
 
