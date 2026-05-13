@@ -1415,7 +1415,7 @@ async function runDetector(){
   const raw = data.content.map(function(i){return i.text||'';}).join('').replace(/```json|```/g,'').trim();
   const r = JSON.parse(raw);
   const human = r.human_score;
-  const verdict = r.verdict||(human<45?'ALTO':human<70?'MEDIO':'BAJO');
+  const verdict = r.verdict||(human>70?'BAJO':human>45?'MEDIO':'ALTO');
   const cls = verdict==='ALTO'?'tag-red':verdict==='MEDIO'?'tag-orange':'tag-green';
   const verdictColor = verdict==='ALTO'?'#E24B4A':verdict==='MEDIO'?'#EF9F27':'#1D9E75';
   $('humanScore').textContent = human+'%';
