@@ -1316,6 +1316,20 @@ function login(){
  $('login').style.display='none';
  document.body.style.overflow='';
  toast('Sesión iniciada: '+n+' · '+c);
+ // Log access to Upstash
+ logAccess(n, c);
+}
+
+async function logAccess(nombre, empresa) {
+ try {
+  await fetch('/api/log-access', {
+   method: 'POST',
+   headers: {'Content-Type':'application/json'},
+   body: JSON.stringify({ nombre, empresa })
+  });
+ } catch(e) {
+  console.log('Log error:', e.message);
+ }
 }
 
 function toggleTheme(){
