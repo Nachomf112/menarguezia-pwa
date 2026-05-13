@@ -1,22 +1,17 @@
 {
+  "rewrites": [
+    { "source": "/api/analyze", "destination": "/api/analyze.js" },
+    { "source": "/api/log-access", "destination": "/api/log-access.js" },
+    { "source": "/api/get-access", "destination": "/api/get-access.js" }
+  ],
   "headers": [
     {
       "source": "/.well-known/assetlinks.json",
-      "headers": [
-        {
-          "key": "Content-Type",
-          "value": "application/json"
-        }
-      ]
+      "headers": [{ "key": "Content-Type", "value": "application/json" }]
     },
     {
       "source": "/.well-known/apple-app-site-association",
-      "headers": [
-        {
-          "key": "Content-Type",
-          "value": "application/json"
-        }
-      ]
+      "headers": [{ "key": "Content-Type", "value": "application/json" }]
     }
   ]
 }
