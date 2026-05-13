@@ -1,66 +1,43 @@
-// api/log-access.js
-// Guarda cada login en Upstash Redis
-
+// api/get-access.js
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
-  if (req.method === 'OPTIONS') return res.status(200).end();
-  if (req.method !== 'POST') return res.status(405).end();
+  if (req.method !== 'GET') return res.status(405).end();
+
+  const { pwd } = req.query;
+  if (pwd !== process.env.ADMIN_PASSWORD) {
+    return res.status(401).json({ error: 'No autorizado' });
+  }
 
   try {
-    const { nombre, empresa } = req.body;
-    if (!nombre) return res.status(400).json({ error: 'Nombre requerido' });
-
-    const now = new Date();
-    const fecha = now.toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric' });
-    const hora = now.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-
-    // Detect device from user agent
-    const ua = req.headers['user-agent'] || '';
-    let dispositivo = 'Desktop';
-    if (/mobile/i.test(ua)) dispositivo = 'Móvil';
-    else if (/tablet|ipad/i.test(ua)) dispositivo = 'Tablet';
-
-    const entry = {
-      id: Date.now(),
-      fecha,
-      hora,
-      nombre: nombre.trim(),
-      empresa: (empresa || 'No especificada').trim(),
-      dispositivo,
-      ip: req.headers['x-forwarded-for']?.split(',')[0]?.trim() || 'N/A'
-    };
-
-    // Save to Upstash Redis via REST API
     const url = process.env.KV_REST_API_URL;
-    const token = process.env.KV_REST_API_TOKEN;
+    const token = process.env.KV_REST_API_READ_ONLY_TOKEN;
 
     if (!url || !token) {
-      return res.status(500).json({ error: 'Upstash no configurado' });
+      return res.status(500).json({ error: 'Upstash no configurado', url: !!url, token: !!token });
     }
 
-    // Correct Upstash REST API format for lpush
-    await fetch(`${url}/lpush/accesos`, {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${token}`,
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify([entry])
+    // Get last 100 entries from Redis list
+    const resp = await fetch(`${url}/lrange/accesos/0/99`, {
+      method: 'GET',
+      headers: { Authorization: `Bearer ${token}` }
     });
 
-    // Trim to last 200 entries
-    await fetch(`${url}/ltrim/accesos/0/199`, {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${token}`,
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify([0, 199])
-    });
+    const data = await resp.json();
 
-    return res.status(200).json({ ok: true });
+    if (!data.result) {
+      return res.status(200).json({ ok: true, entries: [], total: 0, raw: data });
+    }
+
+    const entries = data.result.map(item => {
+      try {
+        const parsed = typeof item === 'string' ? JSON.parse(item) : item;
+        return Array.isArray(parsed) ? parsed[0] : parsed;
+      } catch {
+        return null;
+      }
+    }).filter(Boolean);
+
+    return res.status(200).json({ ok: true, entries, total: entries.length });
 
   } catch (err) {
     return res.status(500).json({ error: err.message });
