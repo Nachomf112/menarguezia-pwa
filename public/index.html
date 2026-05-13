@@ -1274,7 +1274,24 @@ async function runDetector(){
  $('humanScore').textContent='...';
  $('aiRisk').textContent='...';
  try {
-  const prompt = 'Eres un experto en deteccion de texto generado por IA. Analiza el siguiente texto.\n\nTEXTO:\n' + txt + '\n\nResponde UNICAMENTE con JSON valido sin markdown:\n{"human_score":numero 0-100,"verdict":"ALTO"|"MEDIO"|"BAJO","patrones":[{"nombre":"nombre corto","nivel":"alto"|"medio"|"bajo","descripcion":"max 60 chars"},{"nombre":"nombre corto","nivel":"alto"|"medio"|"bajo","descripcion":"max 60 chars"},{"nombre":"nombre corto","nivel":"alto"|"medio"|"bajo","descripcion":"max 60 chars"},{"nombre":"nombre corto","nivel":"alto"|"medio"|"bajo","descripcion":"max 60 chars"},{"nombre":"nombre corto","nivel":"alto"|"medio"|"bajo","descripcion":"max 60 chars"}],"recomendacion":"frase directa max 80 chars","resumen":"analisis en 2 frases mencionando patrones clave"}\n\nPatrones: repeticion lexica, variabilidad sintactica, formalidad excesiva, transiciones IA, impredecibilidad, cliches, referencias personales, errores naturales, burstiness, perplexidad. nivel alto=señal fuerte de IA.';
+  const prompt = 'Eres un experto en linguistica forense y deteccion de contenido generado por IA con criterio matizado y preciso.\n\n'
+   + 'TEXTO A ANALIZAR:\n' + txt + '\n\n'
+   + 'INSTRUCCIONES CRITICAS ANTES DE ANALIZAR:\n'
+   + '1. DISTINGUE escritura IA de escritura corporativa/academica humana. Un informe profesional humano puede sonar formal sin ser IA. No penalices la formalidad por si sola.\n'
+   + '2. BUSCA HUELLAS HUMANAS: contradicciones leves, frases cortadas, cambios de ritmo, expresiones emocionales, ejemplos personales, opiniones subjetivas, imperfecciones naturales, humor, ironia, dudas, matices inesperados. Los humanos escribimos "mal" a veces.\n'
+   + '3. PONDERA CON CAUTELA: conectores como "sin embargo", "por otro lado", "al final" los usa cualquier periodista o escritor humano. No son señal de IA por si solos. Solo penaliza si aparecen de forma mecanica y sistematica.\n'
+   + '4. DETECTA REPETICION SEMANTICA REAL: no solo palabras repetidas, sino misma estructura logica de argumentacion, mismo patron de razonamiento repetido, ausencia total de variacion en como se construyen los argumentos.\n'
+   + '5. MIDE TEMPERATURA HUMANA: frases inesperadas, cambios emocionales, experiencias concretas y especificas, referencias a contextos reales, impredecibilidad genuina. La IA tiende a ser predecible y uniforme aunque use vocabulario variado.\n'
+   + '6. CALIBRACION: un texto puede ser muy profesional y ser humano. Un texto puede tener errores y ser IA. Pondera el conjunto, no señales aisladas.\n\n'
+   + 'Responde UNICAMENTE con JSON valido sin markdown:\n'
+   + '{"human_score":numero 0-100 (100=totalmente humano),"verdict":"ALTO"|"MEDIO"|"BAJO","tipo_escritura":"IA"|"Corporativa humana"|"Academica humana"|"Informal humana"|"Mixta","patrones":['
+   + '{"nombre":"nombre corto","nivel":"alto"|"medio"|"bajo","descripcion":"max 65 chars","es_humano":true|false},'
+   + '{"nombre":"nombre corto","nivel":"alto"|"medio"|"bajo","descripcion":"max 65 chars","es_humano":true|false},'
+   + '{"nombre":"nombre corto","nivel":"alto"|"medio"|"bajo","descripcion":"max 65 chars","es_humano":true|false},'
+   + '{"nombre":"nombre corto","nivel":"alto"|"medio"|"bajo","descripcion":"max 65 chars","es_humano":true|false},'
+   + '{"nombre":"nombre corto","nivel":"alto"|"medio"|"bajo","descripcion":"max 65 chars","es_humano":true|false},'
+   + '{"nombre":"nombre corto","nivel":"alto"|"medio"|"bajo","descripcion":"max 65 chars","es_humano":true|false}],'
+   + '"temperatura_humana":numero 0-100,"recomendacion":"frase directa max 80 chars","resumen":"analisis matizado en 2-3 frases mencionando los factores mas determinantes y por que se descarta o confirma la escritura humana"}';
   const resp = await fetch('/api/analyze',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1000,messages:[{role:'user',content:prompt}]})});
   const data = await resp.json();
 
@@ -1305,23 +1322,44 @@ async function runDetector(){
   function nivelColor(n){return n==='alto'?'#E24B4A':n==='medio'?'#EF9F27':'#1D9E75';}
   function nivelLabel(n){return n==='alto'?'ALTO':n==='medio'?'MEDIO':'BAJO';}
   const barWidth = 100-human;
+  const tempHumana = r.temperatura_humana || 0;
+  const tipoEscritura = r.tipo_escritura || '';
+  const tipoColor = tipoEscritura.includes('IA') ? '#E24B4A' : tipoEscritura.includes('humana') ? '#1D9E75' : '#EF9F27';
+
   const patronesHTML = (r.patrones||[]).map(function(p){
+   const dotColor = p.es_humano ? '#1D9E75' : nivelColor(p.nivel);
+   const badgeBg = p.es_humano ? '#E1F5EE' : nivelColor(p.nivel)+'22';
+   const badgeColor = p.es_humano ? '#1D9E75' : nivelColor(p.nivel);
+   const badgeText = p.es_humano ? 'HUMANO' : nivelLabel(p.nivel);
    return '<div style="display:flex;align-items:flex-start;gap:10px;padding:10px 12px;background:var(--panel);border-radius:8px;border:1px solid var(--line)">'
-    +'<div style="flex-shrink:0;margin-top:3px"><div style="width:8px;height:8px;border-radius:50%;background:'+nivelColor(p.nivel)+'"></div></div>'
+    +'<div style="flex-shrink:0;margin-top:3px"><div style="width:8px;height:8px;border-radius:50%;background:'+dotColor+'"></div></div>'
     +'<div style="flex:1;min-width:0">'
     +'<div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:3px">'
     +'<span style="font-size:12px;font-weight:600;color:var(--text)">'+p.nombre+'</span>'
-    +'<span style="font-size:10px;font-weight:700;padding:1px 7px;border-radius:20px;background:'+nivelColor(p.nivel)+'22;color:'+nivelColor(p.nivel)+';flex-shrink:0">'+nivelLabel(p.nivel)+'</span>'
+    +'<span style="font-size:10px;font-weight:700;padding:1px 7px;border-radius:20px;background:'+badgeBg+';color:'+badgeColor+';flex-shrink:0">'+badgeText+'</span>'
     +'</div>'
     +'<div style="font-size:11px;color:var(--muted);line-height:1.4">'+p.descripcion+'</div>'
     +'</div></div>';
   }).join('');
+
   $('detectorOutput').innerHTML =
    '<div style="margin-bottom:14px">'
    +'<div style="display:flex;justify-content:space-between;font-size:11px;color:var(--muted);margin-bottom:5px"><span>Humano</span><span>IA</span></div>'
    +'<div style="height:6px;background:var(--line);border-radius:3px;overflow:hidden">'
    +'<div style="height:100%;width:'+barWidth+'%;background:'+verdictColor+';border-radius:3px;transition:width .6s ease"></div></div>'
    +'<div style="display:flex;justify-content:space-between;font-size:11px;color:var(--muted);margin-top:4px"><span>'+human+'% humano</span><span>'+barWidth+'% IA</span></div>'
+   +'</div>'
+   +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px">'
+   +'<div style="background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:10px 12px">'
+   +'<div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);margin-bottom:4px">Tipo de escritura</div>'
+   +'<div style="font-size:12px;font-weight:600;color:'+tipoColor+'">'+tipoEscritura+'</div>'
+   +'</div>'
+   +'<div style="background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:10px 12px">'
+   +'<div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);margin-bottom:6px">Temperatura humana</div>'
+   +'<div style="height:4px;background:var(--line);border-radius:2px;overflow:hidden">'
+   +'<div style="height:100%;width:'+tempHumana+'%;background:#1D9E75;border-radius:2px"></div></div>'
+   +'<div style="font-size:11px;color:var(--muted);margin-top:3px">'+tempHumana+'/100</div>'
+   +'</div>'
    +'</div>'
    +'<div style="font-size:11px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);margin-bottom:10px">Patrones detectados</div>'
    +'<div style="display:flex;flex-direction:column;gap:7px;margin-bottom:14px">'+patronesHTML+'</div>'
