@@ -655,6 +655,10 @@ footer a{
  }
 }
 </style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script>
+if(typeof pdfjsLib !== 'undefined') pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+</script>
 </head>
 
 <body>
@@ -758,7 +762,7 @@ footer a{
      <div class="kpi"><strong>10</strong><span>Módulos activos</span></div>
      <div class="kpi"><strong id="analysisCounter">0</strong><span>Análisis realizados</span></div>
      <div class="kpi"><strong id="riskCounter">0</strong><span>Riesgos detectados</span></div>
-     <div class="kpi"><strong id="creditKpi">100</strong><span>Créditos restantes</span></div>
+     <div class="kpi" style="cursor:pointer" title="Click para resetear créditos" onclick="if(confirm('¿Resetear créditos a 100?')){credits=100;analysisCount=0;riskCount=0;saveState();$('creditKpi').textContent=100;$('analysisCounter').textContent=0;$('riskCounter').textContent=0;toast('Créditos reseteados');}"><strong id="creditKpi">100</strong><span>Créditos restantes</span><div style="font-size:10px;color:var(--muted);margin-top:2px">↻ click para resetear</div></div>
     </div>
 
     <div class="grid" style="margin-top:16px">
@@ -781,10 +785,19 @@ footer a{
    <section id="detector" class="module panel">
     <h2>AI Detector</h2>
     <p style="color:var(--muted)">Detecta patrones IA, naturalidad, formalidad y repetición.</p>
-    <textarea id="detectorText" placeholder="Pega aquí un texto..."></textarea>
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;flex-wrap:wrap">
+     <label style="display:flex;align-items:center;gap:6px;background:var(--panel2);border:1px solid var(--line);border-radius:8px;padding:7px 12px;cursor:pointer;font-size:12px;font-weight:500;color:var(--text)">
+      📎 Importar archivo
+      <input type="file" accept=".txt,.md,.html,.pdf" style="display:none" onchange="importFile(this,'detectorText','detectorCharCount')">
+     </label>
+     <span style="font-size:11px;color:var(--muted)">TXT · MD · HTML · PDF</span>
+     <span id="detectorCharCount" style="font-size:11px;color:var(--muted);margin-left:auto">0 / 50.000 car.</span>
+    </div>
+    <textarea id="detectorText" placeholder="Pega aquí un texto o importa un archivo..." oninput="updateCharCount(this,'detectorCharCount')"></textarea>
     <div class="actions">
      <button class="btn primary" type="button" data-action="run-detector">Analizar</button>
      <button class="btn" type="button" data-action="load-detector">Ejemplo</button>
+     <button class="btn" type="button" onclick="$('detectorText').value='';$('detectorOutput').textContent='Esperando análisis...';$('humanScore').textContent='0%';$('aiRisk').textContent='-'">Limpiar</button>
     </div>
     <div class="grid" style="margin-top:16px">
      <div class="card"><span>Human Score</span><strong id="humanScore">0%</strong></div>
@@ -803,10 +816,19 @@ footer a{
      <option>Email comercial</option>
     </select>
     <br><br>
-    <textarea id="humanizerText" placeholder="Pega aquí un texto..."></textarea>
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;flex-wrap:wrap">
+     <label style="display:flex;align-items:center;gap:6px;background:var(--panel2);border:1px solid var(--line);border-radius:8px;padding:7px 12px;cursor:pointer;font-size:12px;font-weight:500;color:var(--text)">
+      📎 Importar archivo
+      <input type="file" accept=".txt,.md,.html,.pdf" style="display:none" onchange="importFile(this,'humanizerText','humanizerCharCount')">
+     </label>
+     <span style="font-size:11px;color:var(--muted)">TXT · MD · HTML · PDF</span>
+     <span id="humanizerCharCount" style="font-size:11px;color:var(--muted);margin-left:auto">0 / 50.000 car.</span>
+    </div>
+    <textarea id="humanizerText" placeholder="Pega aquí el texto generado por IA o importa un archivo..." oninput="updateCharCount(this,'humanizerCharCount')"></textarea>
     <div class="actions">
      <button class="btn primary" type="button" data-action="run-humanizer">Humanizar</button>
      <button class="btn" type="button" data-action="load-humanizer">Ejemplo</button>
+     <button class="btn" type="button" onclick="$('humanizerText').value='';$('humanizerOutput').textContent='Esperando...'">Limpiar</button>
     </div>
     <div class="output" id="humanizerOutput">Esperando texto...</div>
    </section>
@@ -818,6 +840,7 @@ footer a{
     <div class="actions">
      <button class="btn primary" type="button" data-action="run-linkedin">Optimizar</button>
      <button class="btn" type="button" data-action="load-linkedin">Ejemplo</button>
+     <button class="btn" type="button" onclick="$('linkedinText').value='';$('linkedinOutput').textContent='Esperando...'">Limpiar</button>
     </div>
     <div class="output" id="linkedinOutput">Esperando idea...</div>
    </section>
@@ -829,6 +852,7 @@ footer a{
     <div class="actions">
      <button class="btn primary" type="button" data-action="run-reputation">Analizar riesgo</button>
      <button class="btn" type="button" data-action="load-reputation">Ejemplo</button>
+     <button class="btn" type="button" onclick="$('reputationText').value='';$('reputationOutput').textContent='Esperando...'">Limpiar</button>
     </div>
     <div class="output" id="reputationOutput">Esperando análisis...</div>
    </section>
@@ -840,6 +864,7 @@ footer a{
     <div class="actions">
      <button class="btn primary" type="button" data-action="run-soc">Analizar logs</button>
      <button class="btn" type="button" data-action="load-soc">Ejemplo</button>
+     <button class="btn" type="button" onclick="$('socText').value='';$('socOutput').textContent='Esperando...'">Limpiar</button>
     </div>
     <div class="output" id="socOutput">Esperando logs...</div>
    </section>
@@ -850,6 +875,7 @@ footer a{
     <div class="actions">
      <button class="btn primary" type="button" data-action="run-compliance">Evaluar cumplimiento</button>
      <button class="btn" type="button" data-action="load-compliance">Ejemplo</button>
+     <button class="btn" type="button" onclick="$('complianceText').value='';$('complianceOutput').textContent='Esperando...'">Limpiar</button>
     </div>
     <div class="output" id="complianceOutput">Esperando caso de uso...</div>
    </section>
@@ -1001,7 +1027,7 @@ footer a{
       <h3>Business</h3>
       <div class="price">49€<span style="font-size:13px;font-weight:400;color:var(--muted)">/mes</span></div>
       <ul>
-       <li>Análisis ilimitados</li>
+       <li>2.000 análisis/mes</li>
        <li>Acceso API REST</li>
        <li>Make / n8n integración</li>
        <li>Multiempresa</li>
@@ -1136,12 +1162,118 @@ function showApiExample(key) {
   }
 }
 
-let analysisCount=0;
-let riskCount=0;
-let credits=100;
-let usage={detector:0,rep:0,soc:0};
+// File import function
+const MAX_CHARS = 50000;
+
+function updateCharCount(textarea, counterId) {
+ const len = textarea.value.length;
+ const el = document.getElementById(counterId);
+ if(!el) return;
+ el.textContent = len.toLocaleString('es-ES') + ' / 50.000 caracteres';
+ el.style.color = len > MAX_CHARS ? '#E24B4A' : len > 40000 ? '#EF9F27' : 'var(--muted)';
+}
+
+async function importFile(input, textareaId, counterId) {
+ const file = input.files[0];
+ if(!file) return;
+ const ta = document.getElementById(textareaId);
+ const MAX_SIZE = 5 * 1024 * 1024; // 5MB max file size
+
+ if(file.size > MAX_SIZE) {
+  toast('Archivo demasiado grande. Máximo 5MB.');
+  return;
+ }
+
+ toast('Cargando archivo...');
+
+ try {
+  let text = '';
+
+  if(file.type === 'application/pdf' || file.name.endsWith('.pdf')) {
+   // PDF extraction with PDF.js
+   if(typeof pdfjsLib === 'undefined') {
+    toast('Error: PDF.js no disponible. Recarga la página.');
+    return;
+   }
+   const arrayBuffer = await file.arrayBuffer();
+   const pdf = await pdfjsLib.getDocument({data: arrayBuffer}).promise;
+   const pages = [];
+   for(let i = 1; i <= pdf.numPages; i++) {
+    const page = await pdf.getPage(i);
+    const textContent = await page.getTextContent();
+    const pageText = textContent.items.map(function(item){ return item.str; }).join(' ');
+    pages.push(pageText);
+   }
+   text = pages.join('\n\n');
+   if(!text.trim()) {
+    toast('PDF sin texto seleccionable. Solo funciona con PDFs con texto, no escaneados.');
+    return;
+   }
+  } else {
+   // TXT, MD, HTML
+   text = await file.text();
+   if(file.name.endsWith('.html') || file.type === 'text/html') {
+    // Extract visible text from HTML
+    const div = document.createElement('div');
+    div.innerHTML = text;
+    // Remove scripts and styles
+    div.querySelectorAll('script,style,nav,header,footer').forEach(function(el){ el.remove(); });
+    text = div.innerText || div.textContent || '';
+   }
+  }
+
+  // Clean up extra whitespace
+  text = text.replace(/\r\n/g,'\n').replace(/\n{3,}/g,'\n\n').trim();
+
+  // Truncate if too long
+  if(text.length > MAX_CHARS) {
+   text = text.substring(0, MAX_CHARS);
+   toast('Texto truncado a 50.000 caracteres para controlar costes.');
+  } else {
+   toast('Archivo cargado: ' + file.name + ' (' + text.length.toLocaleString('es-ES') + ' caracteres)');
+  }
+
+  ta.value = text;
+  updateCharCount(ta, counterId);
+  input.value = ''; // Reset input so same file can be loaded again
+
+ } catch(e) {
+  toast('Error al leer el archivo: ' + e.message);
+  console.error(e);
+ }
+}
+
+// Load persisted state from localStorage
+function loadState() {
+ try {
+  const s = localStorage.getItem('menarguez_suite_state');
+  if (s) return JSON.parse(s);
+ } catch(e) {}
+ return { credits: 100, analysisCount: 0, riskCount: 0 };
+}
+function saveState() {
+ try {
+  localStorage.setItem('menarguez_suite_state', JSON.stringify({ credits, analysisCount, riskCount }));
+ } catch(e) {}
+}
+
+const _state = loadState();
+let analysisCount = _state.analysisCount;
+let riskCount = _state.riskCount;
+let credits = _state.credits;
+let usage = {detector:0,rep:0,soc:0};
 
 const $ = (id) => document.getElementById(id);
+
+// Initialize UI from persisted state
+window.addEventListener('DOMContentLoaded', function() {
+ const kpi = $('creditKpi');
+ const ac = $('analysisCounter');
+ const rc = $('riskCounter');
+ if(kpi) kpi.textContent = credits;
+ if(ac) ac.textContent = analysisCount;
+ if(rc) rc.textContent = riskCount;
+});
 
 function toast(msg){
  const t=document.createElement('div');
@@ -1184,6 +1316,20 @@ function login(){
  $('login').style.display='none';
  document.body.style.overflow='';
  toast('Sesión iniciada: '+n+' · '+c);
+ // Log access to Upstash
+ logAccess(n, c);
+}
+
+async function logAccess(nombre, empresa) {
+ try {
+  await fetch('/api/log-access', {
+   method: 'POST',
+   headers: {'Content-Type':'application/json'},
+   body: JSON.stringify({ nombre, empresa })
+  });
+ } catch(e) {
+  console.log('Log error:', e.message);
+ }
 }
 
 function toggleTheme(){
@@ -1200,11 +1346,13 @@ function consume(){
  analysisCount++;
  $('creditKpi').textContent=credits;
  $('analysisCounter').textContent=analysisCount;
+ saveState();
 }
 
 function addRisk(){
  riskCount++;
  $('riskCounter').textContent=riskCount;
+ saveState();
 }
 
 function updateBars(){
@@ -1232,25 +1380,115 @@ function loadDetector(){
  toast('Ejemplo cargado');
 }
 
-function runDetector(){
- if(!$('detectorText').value.trim()){alert('Introduce un texto');return;}
+async function runDetector(){
+ const txt = $('detectorText').value.trim();
+ if(!txt){alert('Introduce un texto');return;}
+ if(txt.length > MAX_CHARS){alert('El texto supera los 50.000 caracteres. Por favor reduce el contenido antes de analizar.');return;}
  consume();
  usage.detector++;
- loading('detectorOutput',()=>{
-  const txt=$('detectorText').value.toLowerCase();
-  let human=58;
-  if(txt.includes('la verdad') || txt.includes('me ha')) human=84;
-  if(txt.includes('innovadoras') || txt.includes('estratégicas')) human=28;
-  const r=human<45?'ALTO':human<70?'MEDIO':'BAJO';
-  const cls=human<45?'tag-red':human<70?'tag-orange':'tag-green';
-  $('humanScore').textContent=human+'%';
-  $('aiRisk').textContent=r;
-  if(r==='ALTO') addRisk();
-  $('detectorOutput').innerHTML=`✔ Human Score: ${human}%<br>✔ Formalidad analizada<br>✔ Repetición y naturalidad revisadas<br><br><strong>Recomendación:</strong> ${human<45?'Humanizar antes de publicar.':'Apto con revisión ligera.'}`;
-  addHistory('AI Detector',r,cls);
+ $('detectorOutput').innerHTML='<div style="display:flex;align-items:center;gap:10px;color:var(--muted);padding:8px 0"><span style="display:inline-block;width:14px;height:14px;border:2px solid var(--brand2);border-top-color:transparent;border-radius:50%;animation:spin .7s linear infinite"></span> Analizando con IA...</div>';
+ $('humanScore').textContent='...';
+ $('aiRisk').textContent='...';
+ try {
+  const prompt = 'Eres un experto en linguistica forense y deteccion de contenido generado por IA con criterio matizado y preciso.\n\n'
+   + 'TEXTO A ANALIZAR:\n' + txt + '\n\n'
+   + 'INSTRUCCIONES CRITICAS ANTES DE ANALIZAR:\n'
+   + '1. DISTINGUE escritura IA de escritura corporativa/academica humana. Un informe profesional humano puede sonar formal sin ser IA. No penalices la formalidad por si sola.\n'
+   + '2. BUSCA HUELLAS HUMANAS: contradicciones leves, frases cortadas, cambios de ritmo, expresiones emocionales, ejemplos personales, opiniones subjetivas, imperfecciones naturales, humor, ironia, dudas, matices inesperados. Los humanos escribimos "mal" a veces.\n'
+   + '3. PONDERA CON CAUTELA: conectores como "sin embargo", "por otro lado", "al final" los usa cualquier periodista o escritor humano. No son señal de IA por si solos. Solo penaliza si aparecen de forma mecanica y sistematica.\n'
+   + '4. DETECTA REPETICION SEMANTICA REAL: no solo palabras repetidas, sino misma estructura logica de argumentacion, mismo patron de razonamiento repetido, ausencia total de variacion en como se construyen los argumentos.\n'
+   + '5. MIDE TEMPERATURA HUMANA: frases inesperadas, cambios emocionales, experiencias concretas y especificas, referencias a contextos reales, impredecibilidad genuina. La IA tiende a ser predecible y uniforme aunque use vocabulario variado.\n'
+   + '6. CALIBRACION: un texto puede ser muy profesional y ser humano. Un texto puede tener errores y ser IA. Pondera el conjunto, no señales aisladas.\n\n'
+   + 'Responde UNICAMENTE con JSON valido sin markdown:\n'
+   + '{"human_score":numero 0-100 (100=totalmente humano),"verdict":"ALTO"|"MEDIO"|"BAJO","tipo_escritura":"IA"|"Corporativa humana"|"Academica humana"|"Informal humana"|"Mixta","patrones":['
+   + '{"nombre":"nombre corto","nivel":"alto"|"medio"|"bajo","descripcion":"max 65 chars","es_humano":true|false},'
+   + '{"nombre":"nombre corto","nivel":"alto"|"medio"|"bajo","descripcion":"max 65 chars","es_humano":true|false},'
+   + '{"nombre":"nombre corto","nivel":"alto"|"medio"|"bajo","descripcion":"max 65 chars","es_humano":true|false},'
+   + '{"nombre":"nombre corto","nivel":"alto"|"medio"|"bajo","descripcion":"max 65 chars","es_humano":true|false},'
+   + '{"nombre":"nombre corto","nivel":"alto"|"medio"|"bajo","descripcion":"max 65 chars","es_humano":true|false},'
+   + '{"nombre":"nombre corto","nivel":"alto"|"medio"|"bajo","descripcion":"max 65 chars","es_humano":true|false}],'
+   + '"temperatura_humana":numero 0-100,"recomendacion":"frase directa max 80 chars","resumen":"analisis matizado en 2-3 frases mencionando los factores mas determinantes y por que se descarta o confirma la escritura humana"}';
+  const resp = await fetch('/api/analyze',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1000,messages:[{role:'user',content:prompt}]})});
+  const data = await resp.json();
+
+  // Handle rate limit errors
+  if(resp.status === 429) {
+   $('detectorOutput').innerHTML='<div style="background:#FAEEDA;border:1px solid #EF9F27;border-radius:8px;padding:14px 16px;color:#633806;font-size:13px;line-height:1.6">'
+    +'<strong>Limite alcanzado</strong><br>'+data.message+'</div>';
+   $('humanScore').textContent='-';
+   $('aiRisk').textContent='-';
+   return;
+  }
+
+  // Show remaining usage
+  if(data._usage) {
+   const rem = data._usage.daily_remaining;
+   $('activity').innerHTML = '📊 Análisis restantes hoy: <strong>'+rem+'/50</strong>';
+  }
+
+  const raw = data.content.map(function(i){return i.text||'';}).join('').replace(/```json|```/g,'').trim();
+  const r = JSON.parse(raw);
+  const human = r.human_score;
+  const verdict = r.verdict||(human>70?'BAJO':human>45?'MEDIO':'ALTO');
+  const cls = verdict==='ALTO'?'tag-red':verdict==='MEDIO'?'tag-orange':'tag-green';
+  const verdictColor = verdict==='ALTO'?'#E24B4A':verdict==='MEDIO'?'#EF9F27':'#1D9E75';
+  $('humanScore').textContent = human+'%';
+  $('aiRisk').textContent = verdict;
+  if(verdict==='ALTO') addRisk();
+  function nivelColor(n){return n==='alto'?'#E24B4A':n==='medio'?'#EF9F27':'#1D9E75';}
+  function nivelLabel(n){return n==='alto'?'ALTO':n==='medio'?'MEDIO':'BAJO';}
+  const barWidth = 100-human;
+  const tempHumana = r.temperatura_humana || 0;
+  const tipoEscritura = r.tipo_escritura || '';
+  const tipoColor = tipoEscritura.includes('IA') ? '#E24B4A' : tipoEscritura.includes('humana') ? '#1D9E75' : '#EF9F27';
+
+  const patronesHTML = (r.patrones||[]).map(function(p){
+   const dotColor = p.es_humano ? '#1D9E75' : nivelColor(p.nivel);
+   const badgeBg = p.es_humano ? '#E1F5EE' : nivelColor(p.nivel)+'22';
+   const badgeColor = p.es_humano ? '#1D9E75' : nivelColor(p.nivel);
+   const badgeText = p.es_humano ? 'HUMANO' : nivelLabel(p.nivel);
+   return '<div style="display:flex;align-items:flex-start;gap:10px;padding:10px 12px;background:var(--panel);border-radius:8px;border:1px solid var(--line)">'
+    +'<div style="flex-shrink:0;margin-top:3px"><div style="width:8px;height:8px;border-radius:50%;background:'+dotColor+'"></div></div>'
+    +'<div style="flex:1;min-width:0">'
+    +'<div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:3px">'
+    +'<span style="font-size:12px;font-weight:600;color:var(--text)">'+p.nombre+'</span>'
+    +'<span style="font-size:10px;font-weight:700;padding:1px 7px;border-radius:20px;background:'+badgeBg+';color:'+badgeColor+';flex-shrink:0">'+badgeText+'</span>'
+    +'</div>'
+    +'<div style="font-size:11px;color:var(--muted);line-height:1.4">'+p.descripcion+'</div>'
+    +'</div></div>';
+  }).join('');
+
+  $('detectorOutput').innerHTML =
+   '<div style="margin-bottom:14px">'
+   +'<div style="display:flex;justify-content:space-between;font-size:11px;color:var(--muted);margin-bottom:5px"><span>Humano</span><span>IA</span></div>'
+   +'<div style="height:6px;background:var(--line);border-radius:3px;overflow:hidden">'
+   +'<div style="height:100%;width:'+barWidth+'%;background:'+verdictColor+';border-radius:3px;transition:width .6s ease"></div></div>'
+   +'<div style="display:flex;justify-content:space-between;font-size:11px;color:var(--muted);margin-top:4px"><span>'+human+'% humano</span><span>'+barWidth+'% IA</span></div>'
+   +'</div>'
+   +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px">'
+   +'<div style="background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:10px 12px">'
+   +'<div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);margin-bottom:4px">Tipo de escritura</div>'
+   +'<div style="font-size:12px;font-weight:600;color:'+tipoColor+'">'+tipoEscritura+'</div>'
+   +'</div>'
+   +'<div style="background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:10px 12px">'
+   +'<div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);margin-bottom:6px">Temperatura humana</div>'
+   +'<div style="height:4px;background:var(--line);border-radius:2px;overflow:hidden">'
+   +'<div style="height:100%;width:'+tempHumana+'%;background:#1D9E75;border-radius:2px"></div></div>'
+   +'<div style="font-size:11px;color:var(--muted);margin-top:3px">'+tempHumana+'/100</div>'
+   +'</div>'
+   +'</div>'
+   +'<div style="font-size:11px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);margin-bottom:10px">Patrones detectados</div>'
+   +'<div style="display:flex;flex-direction:column;gap:7px;margin-bottom:14px">'+patronesHTML+'</div>'
+   +'<div style="background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:12px;font-size:13px;color:var(--muted);line-height:1.6;margin-bottom:10px">'+r.resumen+'</div>'
+   +'<div style="font-size:13px"><strong style="color:var(--text)">Recomendacion:</strong> <span style="color:var(--muted)">'+r.recomendacion+'</span></div>';
+  addHistory('AI Detector',verdict,cls);
   updateBars();
   toast('AI Detector completado');
- });
+ } catch(e) {
+  $('detectorOutput').innerHTML='<span style="color:#E24B4A">Error: '+e.message+'</span>';
+  $('humanScore').textContent='-';
+  $('aiRisk').textContent='-';
+ }
 }
 
 function loadHumanizer(){
@@ -1258,13 +1496,66 @@ function loadHumanizer(){
  toast('Ejemplo cargado');
 }
 
-function runHumanizer(){
- if(!$('humanizerText').value.trim()){alert('Introduce un texto');return;}
+async function runHumanizer(){
+ const txt = $('humanizerText').value.trim();
+ if(!txt){alert('Introduce un texto');return;}
+ if(txt.length > MAX_CHARS){alert('El texto supera los 50.000 caracteres. Por favor reduce el contenido antes de humanizar.');return;}
  consume();
- const tone=$('tone').value;
- $('humanizerOutput').innerHTML=`<strong>Tono: ${tone}</strong><br><br>La verdad es que muchas empresas ya están usando IA para ahorrar tiempo, trabajar mejor y evitar tareas repetitivas que no aportan demasiado valor.`;
- addHistory('Humanizer','COMPLETADO','tag-green');
- toast('Texto humanizado');
+ const tone = $('tone').value;
+ $('humanizerOutput').innerHTML='<div style="display:flex;align-items:center;gap:10px;color:var(--muted);padding:8px 0"><span style="display:inline-block;width:14px;height:14px;border:2px solid var(--brand2);border-top-color:transparent;border-radius:50%;animation:spin .7s linear infinite"></span> Humanizando texto...</div>';
+
+ try {
+  const toneDesc = tone==='Profesional'?'profesional pero cercano, sin jerga corporativa':tone==='Cercano'?'casual, cálido y conversacional, como si lo escribiera un amigo':tone==='LinkedIn'?'auténtico para LinkedIn, personal y directo, con personalidad real':'natural y humano';
+
+  const prompt = 'Eres un experto en reescribir textos generados por IA para que suenen auténticamente humanos. Reescribe el siguiente texto con tono ' + toneDesc + '.\n\nREGLAS:\n- Mantén el mensaje principal pero cambia la estructura\n- Añade imperfecciones naturales y variación de ritmo\n- Elimina clichés corporativos y frases hechas\n- Usa vocabulario más concreto y menos abstracto\n- Varía la longitud de las frases\n- Si es apropiado, añade alguna opinión o experiencia personal\n- El resultado debe parecer escrito por una persona real\n\nTEXTO ORIGINAL:\n' + txt + '\n\nResponde ÚNICAMENTE con el texto reescrito, sin explicaciones ni comentarios.';
+
+  const resp = await fetch('/api/analyze', {
+   method: 'POST',
+   headers: {'Content-Type':'application/json'},
+   body: JSON.stringify({model:'claude-sonnet-4-20250514', max_tokens:1000, messages:[{role:'user',content:prompt}]})
+  });
+
+  const data = await resp.json();
+
+  if(resp.status===429){
+   $('humanizerOutput').innerHTML='<div style="background:#FAEEDA;border:1px solid #EF9F27;border-radius:8px;padding:14px;color:#633806;font-size:13px">'+data.message+'</div>';
+   return;
+  }
+
+  const humanized = data.content.map(function(i){return i.text||'';}).join('').trim();
+
+  // Count word changes (approximate)
+  const wordsOrig = txt.split(/\s+/).length;
+  const wordsNew = humanized.split(/\s+/).length;
+
+  $('humanizerOutput').innerHTML =
+   '<div style="margin-bottom:12px;display:flex;gap:8px;align-items:center">'
+   +'<span style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--muted)">Tono:</span>'
+   +'<span style="font-size:11px;font-weight:600;padding:2px 10px;border-radius:20px;background:var(--brand-light,#EEEDFE);color:var(--brand,#3C3489)">'+tone+'</span>'
+   +'<span style="font-size:11px;color:var(--muted);margin-left:auto">'+wordsOrig+' → '+wordsNew+' palabras</span>'
+   +'</div>'
+   +'<div style="background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:16px;font-size:13px;line-height:1.8;color:var(--text);white-space:pre-wrap;margin-bottom:12px">'+humanized+'</div>'
+   +'<button onclick="copyHumanized()" style="background:var(--brand,#3C3489);color:#fff;border:none;border-radius:8px;padding:8px 16px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit">📋 Copiar texto</button>';
+  window._lastHumanized = humanized;
+
+  addHistory('Humanizer','COMPLETADO','tag-green');
+  toast('Texto humanizado');
+
+ } catch(e) {
+  $('humanizerOutput').innerHTML='<span style="color:#E24B4A">Error: '+e.message+'</span>';
+ }
+}
+
+function copyLinkedin(){
+ if(window._lastLinkedin){
+  navigator.clipboard.writeText(window._lastLinkedin).then(function(){toast('Copiado al portapapeles');});
+ }
+}
+
+function copyHumanized(){
+ if(window._lastHumanized){
+  navigator.clipboard.writeText(window._lastHumanized).then(function(){toast('Copiado al portapapeles');});
+ }
 }
 
 function loadLinkedin(){
@@ -1272,12 +1563,27 @@ function loadLinkedin(){
  toast('Ejemplo cargado');
 }
 
-function runLinkedin(){
- if(!$('linkedinText').value.trim()){alert('Introduce una idea');return;}
+async function runLinkedin(){
+ const txt = $('linkedinText').value.trim();
+ if(!txt){alert('Introduce una idea');return;}
  consume();
- $('linkedinOutput').innerHTML=`🚀 La IA no viene solo a automatizar tareas.<br><br>Viene a devolver tiempo a las personas.<br><br>✅ menos trabajo manual<br>✅ más foco<br>✅ más productividad<br><br><strong>Primer comentario:</strong><br>La clave no es usar IA por moda, sino aplicarla donde realmente ahorra tiempo.<br><br>#IA #Automatizacion #Empresas`;
- addHistory('LinkedIn','OPTIMIZADO','tag-green');
- toast('Post optimizado');
+ $('linkedinOutput').innerHTML='<div style="display:flex;align-items:center;gap:10px;color:var(--muted);padding:8px 0"><span style="display:inline-block;width:14px;height:14px;border:2px solid var(--brand2);border-top-color:transparent;border-radius:50%;animation:spin .7s linear infinite"></span> Generando post...</div>';
+ try {
+  const prompt = 'Eres un experto en LinkedIn con miles de seguidores. Convierte la siguiente idea en un post viral de LinkedIn en español.\n\nREGLAS:\n- Empieza con un gancho potente en la primera línea\n- Usa saltos de línea cortos para facilitar la lectura en móvil\n- Añade entre 3 y 5 emojis relevantes\n- Incluye entre 3 y 5 hashtags al final\n- Tono auténtico y personal, no corporativo\n- Máximo 1300 caracteres\n- Incluye al final un comentario de primer comentario para aumentar el alcance\n\nIDEA:\n' + txt + '\n\nResponde ÚNICAMENTE con el post listo para publicar, sin explicaciones.';
+  const resp = await fetch('/api/analyze',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:800,messages:[{role:'user',content:prompt}]})});
+  const data = await resp.json();
+  if(resp.status===429){$('linkedinOutput').innerHTML='<div style="background:#FAEEDA;border:1px solid #EF9F27;border-radius:8px;padding:14px;color:#633806;font-size:13px">'+data.message+'</div>';return;}
+  const post = data.content.map(function(i){return i.text||'';}).join('').trim();
+  window._lastLinkedin = post;
+  $('linkedinOutput').innerHTML =
+   '<div style="background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:16px;font-size:13px;line-height:1.8;white-space:pre-wrap;margin-bottom:12px">'+post+'</div>'
+   +'<div style="display:flex;gap:8px;flex-wrap:wrap">'
+   +'<button onclick="copyLinkedin()" style="background:var(--brand,#3C3489);color:#fff;border:none;border-radius:8px;padding:8px 16px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit">📋 Copiar post</button>'
+   +'<span style="font-size:11px;color:var(--muted);align-self:center">'+post.length+' caracteres</span>'
+   +'</div>';
+  addHistory('LinkedIn','OPTIMIZADO','tag-green');
+  toast('Post generado');
+ } catch(e){$('linkedinOutput').innerHTML='<span style="color:#E24B4A">Error: '+e.message+'</span>';}
 }
 
 function loadReputation(){
@@ -1285,15 +1591,37 @@ function loadReputation(){
  toast('Ejemplo cargado');
 }
 
-function runReputation(){
- if(!$('reputationText').value.trim()){alert('Introduce comentario');return;}
+async function runReputation(){
+ const txt = $('reputationText').value.trim();
+ if(!txt){alert('Introduce comentario');return;}
  consume();
  usage.rep++;
- addRisk();
- $('reputationOutput').innerHTML='⚠ Riesgo reputacional ALTO<br><br>• Tono negativo detectado<br>• Urgencia alta<br>• Respuesta sugerida: lamentamos la experiencia, revisamos el caso y contactamos contigo por privado.';
- addHistory('Reputation','RIESGO','tag-red');
- updateBars();
- toast('Riesgo reputacional detectado');
+ $('reputationOutput').innerHTML='<div style="display:flex;align-items:center;gap:10px;color:var(--muted);padding:8px 0"><span style="display:inline-block;width:14px;height:14px;border:2px solid var(--brand2);border-top-color:transparent;border-radius:50%;animation:spin .7s linear infinite"></span> Analizando reputación...</div>';
+ try {
+  const prompt = 'Eres un experto en gestión de reputación online y crisis de comunicación. Analiza el siguiente comentario o reseña.\n\nCOMENTARIO:\n' + txt + '\n\nResponde ÚNICAMENTE con JSON válido sin markdown:\n{"riesgo":"ALTO"|"MEDIO"|"BAJO","sentimiento":"muy negativo"|"negativo"|"neutro"|"positivo","es_fake":true|false,"urgencia":"inmediata"|"alta"|"media"|"baja","senales":["señal 1","señal 2","señal 3"],"respuesta_sugerida":"respuesta pública profesional y empática max 200 chars","accion_interna":"acción interna recomendada max 100 chars","resumen":"análisis en 2 frases"}';
+  const resp = await fetch('/api/analyze',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:600,messages:[{role:'user',content:prompt}]})});
+  const data = await resp.json();
+  if(resp.status===429){$('reputationOutput').innerHTML='<div style="background:#FAEEDA;border:1px solid #EF9F27;border-radius:8px;padding:14px;color:#633806;font-size:13px">'+data.message+'</div>';return;}
+  const raw = data.content.map(function(i){return i.text||'';}).join('').replace(/```json|```/g,'').trim();
+  const r = JSON.parse(raw);
+  const rColor = r.riesgo==='ALTO'?'#E24B4A':r.riesgo==='MEDIO'?'#EF9F27':'#1D9E75';
+  const rBg = r.riesgo==='ALTO'?'#FCEBEB':r.riesgo==='MEDIO'?'#FAEEDA':'#E1F5EE';
+  if(r.riesgo==='ALTO'||r.riesgo==='MEDIO') addRisk();
+  const cls = r.riesgo==='ALTO'?'tag-red':r.riesgo==='MEDIO'?'tag-orange':'tag-green';
+  const senalesHTML = (r.senales||[]).map(function(s){return '<div style="font-size:12px;color:var(--muted);padding:4px 0;border-bottom:1px solid var(--line)">• '+s+'</div>';}).join('');
+  $('reputationOutput').innerHTML =
+   '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:14px">'
+   +'<div style="background:'+rBg+';border-radius:8px;padding:10px;text-align:center"><div style="font-size:10px;color:'+rColor+';font-weight:700;text-transform:uppercase;margin-bottom:3px">Riesgo</div><div style="font-size:16px;font-weight:700;color:'+rColor+'">'+r.riesgo+'</div></div>'
+   +'<div style="background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:10px;text-align:center"><div style="font-size:10px;color:var(--muted);font-weight:700;text-transform:uppercase;margin-bottom:3px">Urgencia</div><div style="font-size:13px;font-weight:600;color:var(--text)">'+r.urgencia+'</div></div>'
+   +'<div style="background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:10px;text-align:center"><div style="font-size:10px;color:var(--muted);font-weight:700;text-transform:uppercase;margin-bottom:3px">¿Fake?</div><div style="font-size:13px;font-weight:600;color:'+(r.es_fake?'#E24B4A':'#1D9E75')+'">'+(r.es_fake?'Posible':'No detectado')+'</div></div>'
+   +'</div>'
+   +'<div style="background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:12px;margin-bottom:10px">'+senalesHTML+'</div>'
+   +'<div style="margin-bottom:10px"><div style="font-size:10px;font-weight:700;text-transform:uppercase;color:var(--muted);margin-bottom:6px">Respuesta sugerida</div><div style="background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:12px;font-size:13px;color:var(--text);line-height:1.6;font-style:italic">'+r.respuesta_sugerida+'</div></div>'
+   +'<div style="font-size:13px;color:var(--muted);line-height:1.6">'+r.resumen+'</div>';
+  addHistory('Reputation',r.riesgo,cls);
+  updateBars();
+  toast('Análisis reputacional completado');
+ } catch(e){$('reputationOutput').innerHTML='<span style="color:#E24B4A">Error: '+e.message+'</span>';}
 }
 
 function loadSOC(){
@@ -1301,15 +1629,39 @@ function loadSOC(){
  toast('Ejemplo cargado');
 }
 
-function runSOC(){
- if(!$('socText').value.trim()){alert('Introduce logs');return;}
+async function runSOC(){
+ const txt = $('socText').value.trim();
+ if(!txt){alert('Introduce logs');return;}
  consume();
  usage.soc++;
- addRisk();
- $('socOutput').innerHTML='<strong>Resumen SOC:</strong><br><br>• Posible fuerza bruta<br>• Severidad MEDIA-ALTA<br>• IOC: 192.168.1.55<br>• Acción: bloquear IP, revisar logs y activar MFA.';
- addHistory('SOC Assistant','ALERTA','tag-red');
- updateBars();
- toast('Alerta SOC generada');
+ $('socOutput').innerHTML='<div style="display:flex;align-items:center;gap:10px;color:var(--muted);padding:8px 0"><span style="display:inline-block;width:14px;height:14px;border:2px solid var(--brand2);border-top-color:transparent;border-radius:50%;animation:spin .7s linear infinite"></span> Analizando logs...</div>';
+ try {
+  const prompt = 'Eres un analista SOC / Blue Team experto en ciberseguridad. Analiza el siguiente log o evento de seguridad.\n\nLOG:\n' + txt + '\n\nResponde ÚNICAMENTE con JSON válido sin markdown:\n{"amenaza":"nombre de la amenaza","severidad":"CRITICA"|"ALTA"|"MEDIA"|"BAJA","mitre_tecnica":"ID y nombre MITRE ATT&CK","ioc":["ioc1","ioc2"],"acciones":["accion1","accion2","accion3"],"explicacion":"explicación técnica en 2 frases","falso_positivo":true|false,"confianza":numero 0-100}';
+  const resp = await fetch('/api/analyze',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:600,messages:[{role:'user',content:prompt}]})});
+  const data = await resp.json();
+  if(resp.status===429){$('socOutput').innerHTML='<div style="background:#FAEEDA;border:1px solid #EF9F27;border-radius:8px;padding:14px;color:#633806;font-size:13px">'+data.message+'</div>';return;}
+  const raw = data.content.map(function(i){return i.text||'';}).join('').replace(/```json|```/g,'').trim();
+  const r = JSON.parse(raw);
+  const sevColor = r.severidad==='CRITICA'?'#A32D2D':r.severidad==='ALTA'?'#E24B4A':r.severidad==='MEDIA'?'#EF9F27':'#1D9E75';
+  const sevBg = r.severidad==='CRITICA'?'#FCEBEB':r.severidad==='ALTA'?'#FCEBEB':r.severidad==='MEDIA'?'#FAEEDA':'#E1F5EE';
+  const cls = r.severidad==='CRITICA'||r.severidad==='ALTA'?'tag-red':r.severidad==='MEDIA'?'tag-orange':'tag-green';
+  if(r.severidad==='CRITICA'||r.severidad==='ALTA') addRisk();
+  const iocHTML = (r.ioc||[]).map(function(i){return '<span style="font-family:monospace;font-size:11px;background:var(--bg);border:1px solid var(--line);border-radius:4px;padding:2px 7px;color:#E24B4A">'+i+'</span>';}).join(' ');
+  const accionesHTML = (r.acciones||[]).map(function(a,i){return '<div style="display:flex;gap:8px;padding:8px 0;border-bottom:1px solid var(--line);font-size:12px"><span style="background:var(--brand,#3C3489);color:#fff;width:18px;height:18px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;flex-shrink:0">'+(i+1)+'</span><span style="color:var(--text)">'+a+'</span></div>';}).join('');
+  $('socOutput').innerHTML =
+   '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px">'
+   +'<div style="background:'+sevBg+';border-radius:8px;padding:12px"><div style="font-size:10px;color:'+sevColor+';font-weight:700;text-transform:uppercase;margin-bottom:3px">Amenaza</div><div style="font-size:13px;font-weight:600;color:'+sevColor+'">'+r.amenaza+'</div></div>'
+   +'<div style="background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:12px"><div style="font-size:10px;color:var(--muted);font-weight:700;text-transform:uppercase;margin-bottom:3px">Severidad · Confianza</div><div style="font-size:13px;font-weight:700;color:'+sevColor+'">'+r.severidad+'</div><div style="font-size:11px;color:var(--muted)">'+r.confianza+'% confianza</div></div>'
+   +'</div>'
+   +'<div style="background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:12px;margin-bottom:10px"><div style="font-size:10px;font-weight:700;text-transform:uppercase;color:var(--muted);margin-bottom:6px">MITRE ATT&CK</div><div style="font-size:12px;font-weight:600;color:var(--text)">'+r.mitre_tecnica+'</div></div>'
+   +(r.ioc&&r.ioc.length?'<div style="margin-bottom:10px"><div style="font-size:10px;font-weight:700;text-transform:uppercase;color:var(--muted);margin-bottom:6px">IOCs detectados</div><div style="display:flex;gap:6px;flex-wrap:wrap">'+iocHTML+'</div></div>':'')
+   +'<div style="margin-bottom:10px"><div style="font-size:10px;font-weight:700;text-transform:uppercase;color:var(--muted);margin-bottom:6px">Acciones recomendadas</div>'+accionesHTML+'</div>'
+   +'<div style="font-size:13px;color:var(--muted);line-height:1.6">'+r.explicacion+'</div>'
+   +(r.falso_positivo?'<div style="margin-top:10px;background:#FAEEDA;border:1px solid #EF9F27;border-radius:8px;padding:10px;font-size:12px;color:#633806">⚠ Posible falso positivo — verificar antes de actuar</div>':'');
+  addHistory('SOC Assistant',r.severidad,cls);
+  updateBars();
+  toast('Análisis SOC completado');
+ } catch(e){$('socOutput').innerHTML='<span style="color:#E24B4A">Error: '+e.message+'</span>';}
 }
 
 function loadCompliance(){
@@ -1317,12 +1669,37 @@ function loadCompliance(){
  toast('Ejemplo cargado');
 }
 
-function runCompliance(){
- if(!$('complianceText').value.trim()){alert('Describe el uso');return;}
+async function runCompliance(){
+ const txt = $('complianceText').value.trim();
+ if(!txt){alert('Describe el uso');return;}
  consume();
- $('complianceOutput').innerHTML='⚖ Evaluación inicial:<br><br>• Riesgo RGPD: medio<br>• Requiere base legal y minimización de datos<br>• Recomendado: registro de prompts, revisión humana y política interna de uso IA.';
- addHistory('AI Compliance','REVISIÓN','tag-orange');
- toast('Compliance evaluado');
+ $('complianceOutput').innerHTML='<div style="display:flex;align-items:center;gap:10px;color:var(--muted);padding:8px 0"><span style="display:inline-block;width:14px;height:14px;border:2px solid var(--brand2);border-top-color:transparent;border-radius:50%;animation:spin .7s linear infinite"></span> Evaluando compliance...</div>';
+ try {
+  const prompt = 'Eres un experto en cumplimiento normativo de IA, RGPD, Ley de IA de la UE y protección de datos. Evalúa el siguiente caso de uso de IA.\n\nCASO DE USO:\n' + txt + '\n\nResponde ÚNICAMENTE con JSON válido sin markdown:\n{"riesgo_rgpd":"ALTO"|"MEDIO"|"BAJO","riesgo_ley_ia":"ALTO"|"MEDIO"|"BAJO"|"NO APLICA","base_legal":"base legal recomendada","datos_personales":true|false,"requiere_dpia":true|false,"recomendaciones":["rec1","rec2","rec3","rec4"],"semaforo":"VERDE"|"AMARILLO"|"ROJO","resumen":"evaluación en 2-3 frases con los puntos críticos"}';
+  const resp = await fetch('/api/analyze',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:600,messages:[{role:'user',content:prompt}]})});
+  const data = await resp.json();
+  if(resp.status===429){$('complianceOutput').innerHTML='<div style="background:#FAEEDA;border:1px solid #EF9F27;border-radius:8px;padding:14px;color:#633806;font-size:13px">'+data.message+'</div>';return;}
+  const raw = data.content.map(function(i){return i.text||'';}).join('').replace(/```json|```/g,'').trim();
+  const r = JSON.parse(raw);
+  const sColor = r.semaforo==='ROJO'?'#E24B4A':r.semaforo==='AMARILLO'?'#EF9F27':'#1D9E75';
+  const sBg = r.semaforo==='ROJO'?'#FCEBEB':r.semaforo==='AMARILLO'?'#FAEEDA':'#E1F5EE';
+  const cls = r.semaforo==='ROJO'?'tag-red':r.semaforo==='AMARILLO'?'tag-orange':'tag-green';
+  const recsHTML = (r.recomendaciones||[]).map(function(rec,i){return '<div style="display:flex;gap:8px;padding:8px 0;border-bottom:1px solid var(--line);font-size:12px"><span style="background:var(--brand,#3C3489);color:#fff;width:18px;height:18px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;flex-shrink:0">'+(i+1)+'</span><span style="color:var(--text)">'+rec+'</span></div>';}).join('');
+  $('complianceOutput').innerHTML =
+   '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:14px">'
+   +'<div style="background:'+sBg+';border-radius:8px;padding:10px;text-align:center"><div style="font-size:20px;margin-bottom:4px">'+(r.semaforo==='ROJO'?'🔴':r.semaforo==='AMARILLO'?'🟡':'🟢')+'</div><div style="font-size:11px;font-weight:700;color:'+sColor+'">'+r.semaforo+'</div></div>'
+   +'<div style="background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:10px;text-align:center"><div style="font-size:10px;color:var(--muted);font-weight:700;margin-bottom:3px">RGPD</div><div style="font-size:13px;font-weight:700;color:'+(r.riesgo_rgpd==='ALTO'?'#E24B4A':r.riesgo_rgpd==='MEDIO'?'#EF9F27':'#1D9E75')+'">'+r.riesgo_rgpd+'</div></div>'
+   +'<div style="background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:10px;text-align:center"><div style="font-size:10px;color:var(--muted);font-weight:700;margin-bottom:3px">Ley IA UE</div><div style="font-size:13px;font-weight:700;color:'+(r.riesgo_ley_ia==='ALTO'?'#E24B4A':r.riesgo_ley_ia==='MEDIO'?'#EF9F27':'#1D9E75')+'">'+r.riesgo_ley_ia+'</div></div>'
+   +'</div>'
+   +'<div style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap">'
+   +'<div style="background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:8px 12px;font-size:12px"><span style="color:var(--muted)">Base legal: </span><strong>'+r.base_legal+'</strong></div>'
+   +'<div style="background:'+(r.requiere_dpia?'#FCEBEB':'#E1F5EE')+';border:1px solid '+(r.requiere_dpia?'#F09595':'#5DCAA5')+';border-radius:8px;padding:8px 12px;font-size:12px;color:'+(r.requiere_dpia?'#A32D2D':'#1D9E75')+'"><strong>'+(r.requiere_dpia?'⚠ Requiere DPIA':'✓ No requiere DPIA')+'</strong></div>'
+   +'</div>'
+   +'<div style="margin-bottom:12px"><div style="font-size:10px;font-weight:700;text-transform:uppercase;color:var(--muted);margin-bottom:6px">Recomendaciones</div>'+recsHTML+'</div>'
+   +'<div style="font-size:13px;color:var(--muted);line-height:1.6">'+r.resumen+'</div>';
+  addHistory('AI Compliance',r.semaforo,cls);
+  toast('Compliance evaluado');
+ } catch(e){$('complianceOutput').innerHTML='<span style="color:#E24B4A">Error: '+e.message+'</span>';}
 }
 
 function simulateWorkflow(){
@@ -1359,7 +1736,139 @@ function askMena(){
 }
 
 function exportReport(){
- const content=`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Informe Menarguez-IA</title><style>body{font-family:'Geist',system-ui,sans-serif;padding:30px}h1{color:#3c3489}.box{border:1px solid #ddd;padding:16px;border-radius:12px;margin:12px 0}</style></head><body><h1>Informe Ejecutivo Menarguez-IA</h1><div class="box">Análisis realizados: ${analysisCount}</div><div class="box">Riesgos detectados: ${riskCount}</div><div class="box">Créditos restantes: ${credits}</div><p>Suite operativa y preparada para integración SaaS.</p></body></html>`;
+ const now = new Date();
+ const fecha = now.toLocaleDateString('es-ES',{day:'2-digit',month:'long',year:'numeric'});
+ const hora = now.toLocaleTimeString('es-ES',{hour:'2-digit',minute:'2-digit'});
+ const histBody = document.getElementById('historyBody');
+ const histRowsEl = histBody ? Array.from(histBody.querySelectorAll('tr')).slice(0,10) : [];
+ const hasData = histRowsEl.length > 0 && !histBody.textContent.includes('Todav');
+ const histRows = hasData ? histRowsEl.map(function(r){
+   const cells = r.querySelectorAll('td');
+   if(cells.length < 3) return '';
+   const fecha = cells[0]?cells[0].textContent:'';
+   const mod = cells[1]?cells[1].textContent:'';
+   const tagEl = cells[3]?cells[3].querySelector('.tag'):null;
+   const tagClass = tagEl ? tagEl.className : 'tag tag-blue';
+   const res = tagEl ? tagEl.textContent : (cells[2]?cells[2].textContent:'');
+   return '<tr><td>'+fecha+'</td><td>'+mod+'</td><td><span class="'+tagClass+'">'+res+'</span></td></tr>';
+ }).join('') : '<tr><td colspan="3" style="text-align:center;color:#999;padding:20px">Sin análisis registrados</td></tr>';
+ const usagePct = Math.round((1-(credits/100))*100);
+ const content=`<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Informe Ejecutivo · Menarguez-IA Solutions</title>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Geist',system-ui,sans-serif;background:#f5f4f1;color:#111;line-height:1.6}
+.header{background:#3C3489;color:#fff;padding:40px;position:relative;overflow:hidden}
+.header::before{content:'';position:absolute;top:-80px;right:-80px;width:300px;height:300px;border-radius:50%;background:rgba(255,255,255,.06)}
+.header-tag{display:inline-block;font-size:10px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.2);border-radius:20px;padding:3px 12px;margin-bottom:14px}
+.header h1{font-size:28px;font-weight:700;letter-spacing:-.03em;margin-bottom:6px}
+.header p{font-size:13px;opacity:.7}
+.header-meta{display:flex;gap:28px;margin-top:20px;flex-wrap:wrap}
+.meta{font-size:12px;opacity:.65}.meta strong{opacity:1;color:#fff}
+.main{max-width:800px;margin:0 auto;padding:36px 24px 60px}
+.kpi-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:32px}
+@media(max-width:600px){.kpi-grid{grid-template-columns:1fr 1fr}}
+.kpi{background:#fff;border:1px solid #e5e4df;border-radius:12px;padding:18px;text-align:center}
+.kpi-val{font-size:36px;font-weight:700;letter-spacing:-.04em;margin-bottom:4px}
+.kpi-val.blue{color:#3C3489}.kpi-val.red{color:#A32D2D}.kpi-val.green{color:#1D9E75}.kpi-val.amber{color:#BA7517}
+.kpi-lbl{font-size:11px;color:#888;text-transform:uppercase;letter-spacing:.07em}
+.section{margin-bottom:28px}
+.sec-label{font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#999;margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.sec-label::after{content:'';flex:1;height:1px;background:#e5e4df}
+.card{background:#fff;border:1px solid #e5e4df;border-radius:12px;overflow:hidden;margin-bottom:12px}
+.bar-header{display:flex;justify-content:space-between;align-items:center;padding:14px 18px 10px}
+.bar-header span{font-size:13px;font-weight:500}
+.bar-header .pct{font-size:20px;font-weight:700;color:#3C3489}
+.bar-track{height:6px;background:#f0efe8;margin:0 18px 14px}
+.bar-fill{height:100%;background:#3C3489;border-radius:3px}
+table{width:100%;border-collapse:collapse}
+thead th{background:#f5f4f1;padding:10px 16px;text-align:left;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.07em;color:#888}
+tbody td{padding:12px 16px;font-size:13px;border-top:1px solid #f0efe8;color:#444}
+.tag{display:inline-block;font-size:10px;font-weight:600;padding:2px 9px;border-radius:20px}
+.tag-red{background:#FCEBEB;color:#A32D2D}
+.tag-green{background:#E1F5EE;color:#1D9E75}
+.tag-orange{background:#FAEEDA;color:#BA7517}
+.tag-blue{background:#EEEDFE;color:#3C3489}
+.status-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:16px}
+.status-item{background:#f5f4f1;border-radius:8px;padding:12px 14px;display:flex;align-items:center;gap:10px}
+.dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.dot.green{background:#1D9E75}.dot.amber{background:#BA7517}.dot.red{background:#A32D2D}
+.status-text{font-size:12px;color:#555}
+.footer{border-top:1px solid #e5e4df;padding:20px 0 0;margin-top:32px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px}
+.footer-brand{font-size:13px;font-weight:600;color:#111}
+.footer-brand span{color:#534AB7}
+.footer-sub{font-size:11px;color:#999}
+.footer-link{font-size:11px;color:#534AB7;text-decoration:none}
+@media print{body{background:#fff}}
+</style>
+</head>
+<body>
+<div class="header">
+ <div style="max-width:800px;margin:0 auto;position:relative;z-index:1">
+  <div class="header-tag">Informe Ejecutivo</div>
+  <h1>Menarguez-IA Solutions</h1>
+  <p>Resumen de actividad y estado operativo de la Suite</p>
+  <div class="header-meta">
+   <div class="meta"><strong>Fecha</strong> · ${fecha}</div>
+   <div class="meta"><strong>Hora</strong> · ${hora}</div>
+   <div class="meta"><strong>Generado por</strong> · Suite Menarguez-IA v2</div>
+  </div>
+ </div>
+</div>
+<div class="main">
+ <div class="section">
+  <div class="sec-label">Resumen de actividad</div>
+  <div class="kpi-grid">
+   <div class="kpi"><div class="kpi-val blue">${analysisCount}</div><div class="kpi-lbl">Análisis realizados</div></div>
+   <div class="kpi"><div class="kpi-val red">${riskCount}</div><div class="kpi-lbl">Riesgos detectados</div></div>
+   <div class="kpi"><div class="kpi-val green">${credits}</div><div class="kpi-lbl">Créditos restantes</div></div>
+   <div class="kpi"><div class="kpi-val amber">12</div><div class="kpi-lbl">Módulos activos</div></div>
+  </div>
+ </div>
+ <div class="section">
+  <div class="sec-label">Uso de créditos</div>
+  <div class="card">
+   <div class="bar-header"><span>Créditos consumidos este periodo</span><span class="pct">${usagePct}%</span></div>
+   <div class="bar-track"><div class="bar-fill" style="width:${usagePct}%"></div></div>
+  </div>
+ </div>
+ <div class="section">
+  <div class="sec-label">Historial de análisis</div>
+  <div class="card">
+   <table>
+    <thead><tr><th>Hora</th><th>Módulo</th><th>Resultado</th></tr></thead>
+    <tbody>${histRows}</tbody>
+   </table>
+  </div>
+ </div>
+ <div class="section">
+  <div class="sec-label">Estado de la suite</div>
+  <div class="card">
+   <div class="status-row">
+    <div class="status-item"><div class="dot green"></div><div class="status-text">API Claude · Operativa</div></div>
+    <div class="status-item"><div class="dot green"></div><div class="status-text">AI Detector · Activo</div></div>
+    <div class="status-item"><div class="dot green"></div><div class="status-text">SOC Assistant · Activo</div></div>
+    <div class="status-item"><div class="dot green"></div><div class="status-text">LinkedIn Optimizer · Activo</div></div>
+    <div class="status-item"><div class="dot amber"></div><div class="status-text">Marketplace · Próximamente</div></div>
+    <div class="status-item"><div class="dot amber"></div><div class="status-text">White-label · Próximamente</div></div>
+   </div>
+  </div>
+ </div>
+ <div class="footer">
+  <div>
+   <div class="footer-brand">Menarguez<span>-IA</span> Solutions</div>
+   <div class="footer-sub">IA · Ciberseguridad · Automatización · ai.menarguez-ia.com</div>
+  </div>
+  <a class="footer-link" href="https://ai.menarguez-ia.com">ai.menarguez-ia.com →</a>
+ </div>
+</div>
+</body>
+</html>`;
  const blob=new Blob([content],{type:'text/html'});
  const a=document.createElement('a');
  a.href=URL.createObjectURL(blob);
