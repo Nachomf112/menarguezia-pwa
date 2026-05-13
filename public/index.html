@@ -758,7 +758,7 @@ footer a{
      <div class="kpi"><strong>10</strong><span>Módulos activos</span></div>
      <div class="kpi"><strong id="analysisCounter">0</strong><span>Análisis realizados</span></div>
      <div class="kpi"><strong id="riskCounter">0</strong><span>Riesgos detectados</span></div>
-     <div class="kpi"><strong id="creditKpi">100</strong><span>Créditos restantes</span></div>
+     <div class="kpi" style="cursor:pointer" title="Click para resetear créditos" onclick="if(confirm('¿Resetear créditos a 100?')){credits=100;analysisCount=0;riskCount=0;saveState();$('creditKpi').textContent=100;$('analysisCounter').textContent=0;$('riskCounter').textContent=0;toast('Créditos reseteados');}"><strong id="creditKpi">100</strong><span>Créditos restantes</span><div style="font-size:10px;color:var(--muted);margin-top:2px">↻ click para resetear</div></div>
     </div>
 
     <div class="grid" style="margin-top:16px">
@@ -1142,12 +1142,37 @@ function showApiExample(key) {
   }
 }
 
-let analysisCount=0;
-let riskCount=0;
-let credits=100;
-let usage={detector:0,rep:0,soc:0};
+// Load persisted state from localStorage
+function loadState() {
+ try {
+  const s = localStorage.getItem('menarguez_suite_state');
+  if (s) return JSON.parse(s);
+ } catch(e) {}
+ return { credits: 100, analysisCount: 0, riskCount: 0 };
+}
+function saveState() {
+ try {
+  localStorage.setItem('menarguez_suite_state', JSON.stringify({ credits, analysisCount, riskCount }));
+ } catch(e) {}
+}
+
+const _state = loadState();
+let analysisCount = _state.analysisCount;
+let riskCount = _state.riskCount;
+let credits = _state.credits;
+let usage = {detector:0,rep:0,soc:0};
 
 const $ = (id) => document.getElementById(id);
+
+// Initialize UI from persisted state
+window.addEventListener('DOMContentLoaded', function() {
+ const kpi = $('creditKpi');
+ const ac = $('analysisCounter');
+ const rc = $('riskCounter');
+ if(kpi) kpi.textContent = credits;
+ if(ac) ac.textContent = analysisCount;
+ if(rc) rc.textContent = riskCount;
+});
 
 function toast(msg){
  const t=document.createElement('div');
@@ -1206,11 +1231,13 @@ function consume(){
  analysisCount++;
  $('creditKpi').textContent=credits;
  $('analysisCounter').textContent=analysisCount;
+ saveState();
 }
 
 function addRisk(){
  riskCount++;
  $('riskCounter').textContent=riskCount;
+ saveState();
 }
 
 function updateBars(){
