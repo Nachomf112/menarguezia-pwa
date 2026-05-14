@@ -57,9 +57,9 @@ export default async function handler(req, res) {
       const getData = await getResp.json();
       if (!getData.result) return res.status(404).json({ ok: false, error: 'Código no encontrado' });
 
-      const codeData = typeof getData.result === 'string'
-        ? JSON.parse(getData.result)
-        : getData.result;
+      let rawResult = getData.result;
+      if (Array.isArray(rawResult)) rawResult = rawResult[0];
+      const codeData = typeof rawResult === 'string' ? JSON.parse(rawResult) : rawResult;
 
       // Borrar el fingerprint
       delete codeData.fingerprint;
@@ -88,9 +88,9 @@ export default async function handler(req, res) {
       const getData = await getResp.json();
       if (!getData.result) return res.status(404).json({ ok: false, error: 'Código no encontrado' });
 
-      const codeData = typeof getData.result === 'string'
-        ? JSON.parse(getData.result)
-        : getData.result;
+      let rawResult = getData.result;
+      if (Array.isArray(rawResult)) rawResult = rawResult[0];
+      const codeData = typeof rawResult === 'string' ? JSON.parse(rawResult) : rawResult;
 
       // Invertir el estado activo
       codeData.activo = !codeData.activo;
@@ -133,9 +133,11 @@ export default async function handler(req, res) {
         if (!getData.result) return null;
 
         try {
-          const data = typeof getData.result === 'string'
-            ? JSON.parse(getData.result)
-            : getData.result;
+          // Upstash puede devolver el valor como string simple o como array ["{ json }"]
+          // dependiendo de cómo se guardó. Manejamos ambos casos.
+          let raw = getData.result;
+          if (Array.isArray(raw)) raw = raw[0];
+          const data = typeof raw === 'string' ? JSON.parse(raw) : raw;
 
           return {
             code: codeKey,
