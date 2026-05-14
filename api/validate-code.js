@@ -85,7 +85,9 @@ export default async function handler(req, res) {
 
     let codeData;
     try {
-      const raw = upstashData.result;
+      // Upstash puede devolver ["{ json }"] o "{ json }" según cómo se guardó
+      let raw = upstashData.result;
+      if (Array.isArray(raw)) raw = raw[0];
       codeData = typeof raw === 'string' ? JSON.parse(raw) : raw;
     } catch (e) {
       return res.status(200).json({ valid: false, error: 'Error al leer el código' });
