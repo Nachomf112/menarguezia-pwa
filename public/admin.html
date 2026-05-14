@@ -119,6 +119,29 @@ input[type=checkbox]{width:15px;height:15px;accent-color:var(--brand);cursor:poi
 .modal-cancel{background:var(--surface);color:var(--text2)}
 
 .footer{text-align:center;margin-top:24px;font-size:12px;color:var(--text3)}
+.codes-section{margin-top:24px}
+.codes-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:10px}
+.codes-title{font-size:15px;font-weight:700;color:var(--text)}
+.btn-refresh-codes{display:inline-flex;align-items:center;gap:6px;padding:7px 14px;border-radius:8px;font-size:12px;font-weight:600;font-family:inherit;cursor:pointer;border:1px solid var(--border);background:var(--surface);color:var(--text2)}
+.btn-refresh-codes:hover{background:var(--surface2)}
+.codes-table-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;overflow:hidden}
+.code-badge{font-size:11px;font-weight:700;padding:3px 9px;border-radius:20px;font-family:'Geist Mono',monospace}
+.plan-free{background:#f0efe8;color:#666}
+.plan-pro{background:var(--brand-light);color:var(--brand)}
+.plan-business{background:var(--amber-light);color:var(--amber)}
+.plan-enterprise{background:var(--green-light);color:var(--green)}
+.status-dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:5px}
+.status-active{background:var(--green)}
+.status-inactive{background:var(--red)}
+.btn-action{font-size:11px;font-weight:600;padding:4px 10px;border-radius:6px;cursor:pointer;font-family:inherit;border:1px solid var(--border);background:var(--surface);color:var(--text2);margin-right:4px;transition:all .15s}
+.btn-action:hover{background:var(--surface2)}
+.btn-action.reset{background:var(--amber-light);color:var(--amber);border-color:rgba(186,117,23,.25)}
+.btn-action.reset:hover{background:#f0ddb0}
+.btn-action.toggle{background:var(--red-light);color:var(--red);border-color:rgba(163,45,45,.25)}
+.btn-action.toggle.deactivate{background:var(--green-light);color:var(--green);border-color:rgba(29,158,117,.25)}
+.fp-badge{font-size:10px;font-weight:600;padding:2px 8px;border-radius:20px}
+.fp-yes{background:var(--green-light);color:var(--green)}
+.fp-no{background:#f0efe8;color:#999}
 </style>
 </head>
 <body>
@@ -184,6 +207,17 @@ input[type=checkbox]{width:15px;height:15px;accent-color:var(--brand);cursor:poi
       </div>
     </div>
 
+    <div class="codes-section" id="codesSection" style="display:none">
+      <div class="codes-header">
+        <div class="codes-title">🔑 Gestión de códigos de acceso</div>
+        <button class="btn-refresh-codes" onclick="loadCodes()">↻ Actualizar</button>
+      </div>
+      <div class="codes-table-card">
+        <div id="codesWrap">
+          <div class="loading"><div class="dots"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div></div>
+        </div>
+      </div>
+    </div>
     <div class="footer">Menarguez-IA Solutions · app.menarguez-ia.com · Panel de administración</div>
   </div>
 </div>
@@ -239,6 +273,8 @@ async function loadData(isLogin) {
       document.getElementById('loginWrap').style.display = 'none';
       document.getElementById('adminPanel').style.display = 'block';
       refreshInterval = setInterval(() => loadData(false), 30000);
+      document.getElementById('codesSection').style.display = 'block';
+      loadCodes();
     }
 
     allEntries = data.entries;
@@ -397,6 +433,93 @@ function executeDelete() {
 document.getElementById('modalBg').addEventListener('click', function(e) {
   if (e.target === this) closeModal();
 });
+
+// ── GESTIÓN DE CÓDIGOS ────────────────────────────────────────
+async function loadCodes() {
+  const wrap = document.getElementById('codesWrap');
+  wrap.innerHTML = '<div class="loading"><div class="dots"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div></div>';
+  try {
+    const resp = await fetch('/api/get-codes?pwd=' + encodeURIComponent(adminPwd));
+    const data = await resp.json();
+    if (!data.ok) throw new Error(data.error);
+    if (!data.codes.length) {
+      wrap.innerHTML = '<div class="empty">No hay c&oacute;digos registrados. Cr&eacute;alos desde Upstash CLI';
+      return;
+    }
+    const rows = data.codes.map(function(c) {
+      var planClass = 'plan-' + (c.plan || 'free');
+      var planLabel = (c.plan || 'free').toUpperCase();
+      var activoDot = c.activo ? 'status-active' : 'status-inactive';
+      var activoLabel = c.activo ? 'Activo' : 'Inactivo';
+      var toggleLabel = c.activo ? 'Desactivar' : 'Activar';
+      var toggleClass = c.activo ? 'btn-action toggle' : 'btn-action toggle deactivate';
+      var fpLabel = c.vinculado ? '&#x2705; Vinculado' : '&#x274C; Sin vincular';
+      var fpClass = c.vinculado ? 'fp-yes' : 'fp-no';
+      var usosLabel = c.usos_max > 0 ? c.usos_usados + ' / ' + c.usos_max : '&#x221E; Sin l&iacute;mite';
+      var resetBtn = c.vinculado
+        ? '<button class="btn-action reset" data-code="'+c.code+'" data-action="reset" onclick="resetFingerprint(this.dataset.code)">&#x21BA; Resetear</button>'
+        : '';
+      var toggleBtn = '<button class="'+toggleClass+'" data-code="'+c.code+'" data-active="'+c.activo+'" onclick="handleToggle(this)">'+toggleLabel+'</button>';
+      return '<tr>'
+        + '<td style="font-family:monospace;font-size:12px;font-weight:700;color:var(--brand)">'+c.code+'</td>'
+        + '<td class="td-nombre">'+c.nombre+'</td>'
+        + '<td class="td-empresa">'+c.empresa+'</td>'
+        + '<td><span class="code-badge '+planClass+'">'+planLabel+'</span></td>'
+        + '<td style="font-size:12px;color:var(--text2)">'+usosLabel+'</td>'
+        + '<td style="font-size:12px;color:var(--text3)">'+(c.expira||'&mdash;')+'</td>'
+        + '<td><span class="status-dot '+activoDot+'"></span>'+activoLabel+'</td>'
+        + '<td><span class="fp-badge '+fpClass+'">'+fpLabel+'</span></td>'
+        + '<td>'+resetBtn+' '+toggleBtn+'</td>'
+        + '</tr>';
+    }).join('');
+    wrap.innerHTML = `<table>
+      <thead><tr>
+        <th>🔑 Código</th><th>👤 Usuario</th><th>🏢 Empresa</th>
+        <th>💳 Plan</th><th>📊 Usos</th><th>📅 Expira</th>
+        <th>Estado</th><th>📱 Dispositivo</th><th>Acciones</th>
+      </tr></thead>
+      <tbody>${rows}</tbody>
+    </table>`;
+  } catch(e) {
+    wrap.innerHTML = '<div class="empty">Error: ' + e.message + '</div>';
+  }
+}
+
+async function resetFingerprint(code) {
+  if (!confirm('¿Resetear dispositivo vinculado al código ' + code + '?')) return;
+  try {
+    const resp = await fetch('/api/get-codes', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({pwd: adminPwd, action: 'reset-fp', code})
+    });
+    const data = await resp.json();
+    if (!data.ok) throw new Error(data.error);
+    alert('✅ Dispositivo reseteado correctamente.');
+    loadCodes();
+  } catch(e) { alert('Error: ' + e.message); }
+}
+
+function handleToggle(btn) {
+  var code = btn.dataset.code;
+  var active = btn.dataset.active === 'true';
+  toggleCode(code, active);
+}
+
+async function toggleCode(code, currentlyActive) {
+  const accion = currentlyActive ? 'desactivar' : 'activar';
+  if (!confirm('¿' + accion.charAt(0).toUpperCase() + accion.slice(1) + ' el código ' + code + '?')) return;
+  try {
+    const resp = await fetch('/api/get-codes', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({pwd: adminPwd, action: 'toggle-active', code})
+    });
+    const data = await resp.json();
+    if (!data.ok) throw new Error(data.error);
+    loadCodes();
+  } catch(e) { alert('Error: ' + e.message); }
+}
 </script>
 </body>
 </html>
