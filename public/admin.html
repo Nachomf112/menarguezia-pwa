@@ -455,6 +455,13 @@ async function loadCodes() {
       var toggleClass = c.activo ? 'btn-action toggle' : 'btn-action toggle deactivate';
       var fpLabel = c.vinculado ? '&#x2705; Vinculado' : '&#x274C; Sin vincular';
       var fpClass = c.vinculado ? 'fp-yes' : 'fp-no';
+      var dispositivoInfo = '';
+      if (c.vinculado && c.dispositivo) {
+        dispositivoInfo = '<div style="font-size:10px;color:var(--text3);margin-top:3px">'
+          + c.dispositivo.os + ' &middot; ' + c.dispositivo.browser + '</div>'
+          + '<div style="font-size:10px;color:var(--text3)">IP: ' + c.dispositivo.ip + '</div>'
+          + '<div style="font-size:10px;color:var(--text3)">' + (c.dispositivo.fecha||'') + ' ' + (c.dispositivo.hora||'') + '</div>';
+      }
       var usosLabel = c.usos_max > 0 ? c.usos_usados + ' / ' + c.usos_max : '&#x221E; Sin l&iacute;mite';
       var resetBtn = c.vinculado
         ? '<button class="btn-action reset" data-code="'+c.code+'" data-action="reset" onclick="resetFingerprint(this.dataset.code)">&#x21BA; Resetear</button>'
@@ -468,7 +475,7 @@ async function loadCodes() {
         + '<td style="font-size:12px;color:var(--text2)">'+usosLabel+'</td>'
         + '<td style="font-size:12px;color:var(--text3)">'+(c.expira||'&mdash;')+'</td>'
         + '<td><span class="status-dot '+activoDot+'"></span>'+activoLabel+'</td>'
-        + '<td><span class="fp-badge '+fpClass+'">'+fpLabel+'</span></td>'
+        + '<td><span class="fp-badge '+fpClass+'">'+fpLabel+'</span>'+dispositivoInfo+'</td>'
         + '<td>'+resetBtn+' '+toggleBtn+'</td>'
         + '</tr>';
     }).join('');
