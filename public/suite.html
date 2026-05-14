@@ -674,16 +674,8 @@ if(typeof pdfjsLib !== 'undefined') pdfjsLib.GlobalWorkerOptions.workerSrc = 'ht
    </div>
   </div>
 
-  <input id="loginName" placeholder="Nombre de usuario" value="Nacho Menarguez">
   <input id="loginName" placeholder="Tu nombre y apellido" value="">
   <br><br>
-
-  <select id="loginCompany">
-   <option>Menarguez-IA Solutions</option>
-   <option>Clínica Dental Demo</option>
-   <option>Restaurante Demo</option>
-   <option>Consultora Demo</option>
-  </select>
   <input id="loginCompany" placeholder="Nombre de tu empresa" value="" style="width:100%;padding:10px 14px;border-radius:10px;border:1px solid var(--line);background:var(--panel2);color:var(--text);font-family:inherit;font-size:14px;outline:none">
 
   <div class="actions">
@@ -1158,13 +1150,11 @@ function showApiExample(key) {
   const el = document.getElementById('apiExample');
   if (el && apiExamples[key]) {
     el.textContent = apiExamples[key];
-    // highlight active button
     document.querySelectorAll('#api .btn').forEach(b => b.classList.remove('primary'));
     event.target.classList.add('primary');
   }
 }
 
-// File import function
 const MAX_CHARS = 50000;
 
 function updateCharCount(textarea, counterId) {
@@ -1179,7 +1169,7 @@ async function importFile(input, textareaId, counterId) {
  const file = input.files[0];
  if(!file) return;
  const ta = document.getElementById(textareaId);
- const MAX_SIZE = 5 * 1024 * 1024; // 5MB max file size
+ const MAX_SIZE = 5 * 1024 * 1024;
 
  if(file.size > MAX_SIZE) {
   toast('Archivo demasiado grande. Máximo 5MB.');
@@ -1192,7 +1182,6 @@ async function importFile(input, textareaId, counterId) {
   let text = '';
 
   if(file.type === 'application/pdf' || file.name.endsWith('.pdf')) {
-   // PDF extraction with PDF.js
    if(typeof pdfjsLib === 'undefined') {
     toast('Error: PDF.js no disponible. Recarga la página.');
     return;
@@ -1212,22 +1201,17 @@ async function importFile(input, textareaId, counterId) {
     return;
    }
   } else {
-   // TXT, MD, HTML
    text = await file.text();
    if(file.name.endsWith('.html') || file.type === 'text/html') {
-    // Extract visible text from HTML
     const div = document.createElement('div');
     div.innerHTML = text;
-    // Remove scripts and styles
     div.querySelectorAll('script,style,nav,header,footer').forEach(function(el){ el.remove(); });
     text = div.innerText || div.textContent || '';
    }
   }
 
-  // Clean up extra whitespace
   text = text.replace(/\r\n/g,'\n').replace(/\n{3,}/g,'\n\n').trim();
 
-  // Truncate if too long
   if(text.length > MAX_CHARS) {
    text = text.substring(0, MAX_CHARS);
    toast('Texto truncado a 50.000 caracteres para controlar costes.');
@@ -1237,7 +1221,7 @@ async function importFile(input, textareaId, counterId) {
 
   ta.value = text;
   updateCharCount(ta, counterId);
-  input.value = ''; // Reset input so same file can be loaded again
+  input.value = '';
 
  } catch(e) {
   toast('Error al leer el archivo: ' + e.message);
@@ -1245,7 +1229,6 @@ async function importFile(input, textareaId, counterId) {
  }
 }
 
-// Load persisted state from localStorage
 function loadState() {
  try {
   const s = localStorage.getItem('menarguez_suite_state');
@@ -1267,7 +1250,6 @@ let usage = {detector:0,rep:0,soc:0};
 
 const $ = (id) => document.getElementById(id);
 
-// Initialize UI from persisted state
 window.addEventListener('DOMContentLoaded', function() {
  const kpi = $('creditKpi');
  const ac = $('analysisCounter');
@@ -1314,12 +1296,10 @@ function showModule(id){
 
 function login(){
  const n=$('loginName').value || 'Usuario';
- const c=$('loginCompany').value;
  const c=$('loginCompany').value || 'No especificada';
  $('login').style.display='none';
  document.body.style.overflow='';
  toast('Sesión iniciada: '+n+' · '+c);
- // Log access to Upstash
  logAccess(n, c);
 }
 
@@ -1414,7 +1394,6 @@ async function runDetector(){
   const resp = await fetch('/api/analyze',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1000,messages:[{role:'user',content:prompt}]})});
   const data = await resp.json();
 
-  // Handle rate limit errors
   if(resp.status === 429) {
    $('detectorOutput').innerHTML='<div style="background:#FAEEDA;border:1px solid #EF9F27;border-radius:8px;padding:14px 16px;color:#633806;font-size:13px;line-height:1.6">'
     +'<strong>Limite alcanzado</strong><br>'+data.message+'</div>';
@@ -1423,7 +1402,6 @@ async function runDetector(){
    return;
   }
 
-  // Show remaining usage
   if(data._usage) {
    const rem = data._usage.daily_remaining;
    $('activity').innerHTML = '📊 Análisis restantes hoy: <strong>'+rem+'/50</strong>';
@@ -1526,8 +1504,6 @@ async function runHumanizer(){
   }
 
   const humanized = data.content.map(function(i){return i.text||'';}).join('').trim();
-
-  // Count word changes (approximate)
   const wordsOrig = txt.split(/\s+/).length;
   const wordsNew = humanized.split(/\s+/).length;
 
