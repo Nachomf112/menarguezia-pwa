@@ -1,4 +1,4 @@
-// api/get-access.js v2
+// api/get-access.js v3
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   if (req.method !== 'GET') return res.status(405).end();
@@ -16,7 +16,6 @@ export default async function handler(req, res) {
       return res.status(500).json({ error: 'Upstash no configurado', url: !!url, token: !!token });
     }
 
-    // Get last 100 entries from Redis list
     const resp = await fetch(`${url}/lrange/accesos/0/99`, {
       method: 'GET',
       headers: { Authorization: `Bearer ${token}` }
@@ -27,11 +26,11 @@ export default async function handler(req, res) {
     if (!data.result) {
       return res.status(200).json({ ok: true, entries: [], total: 0, raw: data });
     }
- 
+
     const entries = data.result.map(item => {
       try {
         const parsed = typeof item === 'string' ? JSON.parse(item) : item;
-        const obj = Array.isArray(parsed) ? parsed[0] : parsed;
+        const obj = Array.isArray(parsed) ? JSON.parse(parsed[0]) : parsed;
         if (!obj || !obj.nombre) return null;
         return obj;
       } catch {
