@@ -146,9 +146,11 @@ export default async function handler(req, res) {
             usos_max: data.usos_max || 0,
             usos_usados: data.usos_usados || 0,
             expira: data.expira || null,
-            activo: data.activo !== false, // true por defecto
-            // fingerprint: solo indicamos si existe, no lo exponemos completo
-            vinculado: !!data.fingerprint
+            activo: data.activo !== false,
+            vinculado: !!data.fingerprint,
+            // Datos del dispositivo vinculado (OS, navegador, IP, fecha)
+            // Solo se rellenan tras el primer acceso desde suite.html
+            dispositivo: data.dispositivo || null
           };
         } catch (e) {
           return null;
