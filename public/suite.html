@@ -1443,7 +1443,7 @@ async function login(){
   const resp=await fetch('/api/validate-code',{
    method:'POST',
    headers:{'Content-Type':'application/json'},
-   body:JSON.stringify({code, fingerprint})
+   body:JSON.stringify({code, fingerprint, userAgent: navigator.userAgent})
   });
   const data=await resp.json();
   if(!data.valid){
