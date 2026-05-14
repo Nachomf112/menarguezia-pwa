@@ -10,9 +10,16 @@ export default async function handler(req, res) {
     const { nombre, empresa } = req.body;
     if (!nombre) return res.status(400).json({ error: 'Nombre requerido' });
 
+    // DESPUÉS (fuerza zona horaria de Madrid)
     const now = new Date();
-    const fecha = now.toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric' });
-    const hora = now.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+    const fecha = now.toLocaleDateString('es-ES', {
+      day: '2-digit', month: '2-digit', year: 'numeric',
+      timeZone: 'Europe/Madrid'
+    });
+    const hora = now.toLocaleTimeString('es-ES', {
+      hour: '2-digit', minute: '2-digit', second: '2-digit',
+      timeZone: 'Europe/Madrid'
+    });
 
     const ua = req.headers['user-agent'] || '';
     let dispositivo = 'Desktop';
