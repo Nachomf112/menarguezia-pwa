@@ -58,8 +58,9 @@ export default async function handler(req, res) {
       if (!getData.result) return res.status(404).json({ ok: false, error: 'Código no encontrado' });
 
       let rawResult = getData.result;
-      while (Array.isArray(rawResult)) rawResult = rawResult[0];
-      while (typeof rawResult === 'string') { try { rawResult = JSON.parse(rawResult); } catch(e) { break; } }
+      if (Array.isArray(rawResult)) rawResult = rawResult[0];
+      if (typeof rawResult === 'string') rawResult = JSON.parse(rawResult);
+      if (typeof rawResult === 'string') rawResult = JSON.parse(rawResult);
       const codeData = rawResult;
 
       // Borrar el fingerprint
@@ -90,8 +91,9 @@ export default async function handler(req, res) {
       if (!getData.result) return res.status(404).json({ ok: false, error: 'Código no encontrado' });
 
       let rawResult = getData.result;
-      while (Array.isArray(rawResult)) rawResult = rawResult[0];
-      while (typeof rawResult === 'string') { try { rawResult = JSON.parse(rawResult); } catch(e) { break; } }
+      if (Array.isArray(rawResult)) rawResult = rawResult[0];
+      if (typeof rawResult === 'string') rawResult = JSON.parse(rawResult);
+      if (typeof rawResult === 'string') rawResult = JSON.parse(rawResult);
       const codeData = rawResult;
 
       // Invertir el estado activo
@@ -137,8 +139,9 @@ export default async function handler(req, res) {
         try {
           // Parseo robusto — soporta múltiples niveles de anidamiento
           let raw = getData.result;
-          while (Array.isArray(raw)) raw = raw[0];
-          while (typeof raw === 'string') { try { raw = JSON.parse(raw); } catch(e) { break; } }
+          if (Array.isArray(raw)) raw = raw[0];
+          if (typeof raw === 'string') raw = JSON.parse(raw);
+          if (typeof raw === 'string') raw = JSON.parse(raw);
           const data = raw;
 
           return {
