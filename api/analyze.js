@@ -140,6 +140,40 @@ export default async function handler(req, res) {
       hourly_remaining: HOURLY_LIMIT_PER_IP - ipCounters[ip].count
     };
 
+    // ── INCREMENTAR USOS DEL CÓDIGO EN UPSTASH ────────────────
+    // Si el usuario envió su código (userCode), incrementamos usos_usados.
+    // Solo si Claude respondió OK para no contar intentos fallidos.
+    // GET → incrementar → SET porque el JSON es complejo (no podemos usar INCR).
+    const userCode = req.body?.userCode;
+    if (userCode && process.env.KV_REST_API_URL && process.env.KV_REST_API_TOKEN) {
+      try {
+        const kvUrl = process.env.KV_REST_API_URL;
+        const kvToken = process.env.KV_REST_API_TOKEN;
+        const kvHeaders = {
+          Authorization: `Bearer ${kvToken}`,
+          'Content-Type': 'application/json'
+        };
+        const getResp = await fetch(`${kvUrl}/get/code:${userCode}`, { headers: kvHeaders });
+        const getData = await getResp.json();
+        if (getData.result) {
+          let raw = getData.result;
+          if (Array.isArray(raw)) raw = raw[0];
+          const codeData = typeof raw === 'string' ? JSON.parse(raw) : raw;
+          codeData.usos_usados = (codeData.usos_usados || 0) + 1;
+          await fetch(`${kvUrl}/set/code:${userCode}`, {
+            method: 'POST',
+            headers: kvHeaders,
+            body: JSON.stringify([JSON.stringify(codeData)])
+          });
+          data._usage.usos_usados = codeData.usos_usados;
+          data._usage.usos_max = codeData.usos_max || 0;
+        }
+      } catch (usosErr) {
+        // Error no crítico — no interrumpimos la respuesta al usuario
+        console.warn('Error incrementando usos:', usosErr.message);
+      }
+    }
+
     return res.status(200).json(data);
 
   } catch (err) {
