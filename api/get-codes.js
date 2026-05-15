@@ -58,8 +58,9 @@ export default async function handler(req, res) {
       if (!getData.result) return res.status(404).json({ ok: false, error: 'Código no encontrado' });
 
       let rawResult = getData.result;
-      if (Array.isArray(rawResult)) rawResult = rawResult[0];
-      const codeData = typeof rawResult === 'string' ? JSON.parse(rawResult) : rawResult;
+      while (Array.isArray(rawResult)) rawResult = rawResult[0];
+      while (typeof rawResult === 'string') { try { rawResult = JSON.parse(rawResult); } catch(e) { break; } }
+      const codeData = rawResult;
 
       // Borrar el fingerprint
       delete codeData.fingerprint;
@@ -89,8 +90,9 @@ export default async function handler(req, res) {
       if (!getData.result) return res.status(404).json({ ok: false, error: 'Código no encontrado' });
 
       let rawResult = getData.result;
-      if (Array.isArray(rawResult)) rawResult = rawResult[0];
-      const codeData = typeof rawResult === 'string' ? JSON.parse(rawResult) : rawResult;
+      while (Array.isArray(rawResult)) rawResult = rawResult[0];
+      while (typeof rawResult === 'string') { try { rawResult = JSON.parse(rawResult); } catch(e) { break; } }
+      const codeData = rawResult;
 
       // Invertir el estado activo
       codeData.activo = !codeData.activo;
@@ -133,11 +135,11 @@ export default async function handler(req, res) {
         if (!getData.result) return null;
 
         try {
-          // Upstash puede devolver el valor como string simple o como array ["{ json }"]
-          // dependiendo de cómo se guardó. Manejamos ambos casos.
+          // Parseo robusto — soporta múltiples niveles de anidamiento
           let raw = getData.result;
-          if (Array.isArray(raw)) raw = raw[0];
-          const data = typeof raw === 'string' ? JSON.parse(raw) : raw;
+          while (Array.isArray(raw)) raw = raw[0];
+          while (typeof raw === 'string') { try { raw = JSON.parse(raw); } catch(e) { break; } }
+          const data = raw;
 
           return {
             code: codeKey,
