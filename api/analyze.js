@@ -118,6 +118,10 @@ export default async function handler(req, res) {
     // El body contiene: { model, max_tokens, messages: [{role, content}] }
     // La API key va en la cabecera x-api-key (nunca en el body ni en la URL).
     // anthropic-version: versión de la API de Anthropic que usamos.
+    // Extraer userCode del body ANTES de mandarlo a Claude
+    // Claude no entiende ese campo y devolvería error
+    const { userCode, ...claudeBody } = req.body;
+
     const response = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
       headers: {
@@ -125,7 +129,7 @@ export default async function handler(req, res) {
         'x-api-key': process.env.ANTHROPIC_API_KEY,
         'anthropic-version': '2023-06-01'
       },
-      body: JSON.stringify(req.body)
+      body: JSON.stringify(claudeBody)
     });
 
     const data = await response.json();
@@ -144,7 +148,7 @@ export default async function handler(req, res) {
     // Si el usuario envió su código (userCode), incrementamos usos_usados.
     // Solo si Claude respondió OK para no contar intentos fallidos.
     // GET → incrementar → SET porque el JSON es complejo (no podemos usar INCR).
-    const userCode = req.body?.userCode;
+    // userCode ya extraído arriba del destructuring
     if (userCode && process.env.KV_REST_API_URL && process.env.KV_REST_API_TOKEN) {
       try {
         const kvUrl = process.env.KV_REST_API_URL;
