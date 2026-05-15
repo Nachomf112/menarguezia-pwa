@@ -85,12 +85,14 @@ export default async function handler(req, res) {
 
     let codeData;
     try {
-      // Parseo flexible — soporta objeto directo, string JSON, o array de strings
+      // Parseo flexible con log para debug
       let raw = upstashData.result;
-      if (Array.isArray(raw)) raw = raw[0];  // ["{ json }"] → "{ json }"
-      if (typeof raw === 'string') raw = JSON.parse(raw);  // "{ json }" → { json }
-      // Si sigue siendo string (doble stringify), parsear una vez más
-      if (typeof raw === 'string') raw = JSON.parse(raw);
+      console.log('Upstash raw type:', typeof raw, 'isArray:', Array.isArray(raw));
+      console.log('Upstash raw value:', JSON.stringify(raw).substring(0, 200));
+      if (Array.isArray(raw)) raw = raw[0];
+      if (typeof raw === 'string') { try { raw = JSON.parse(raw); } catch(e) { console.error('Parse error 1:', e.message); } }
+      if (typeof raw === 'string') { try { raw = JSON.parse(raw); } catch(e) { console.error('Parse error 2:', e.message); } }
+      console.log('Parsed activo:', raw && raw.activo);
       codeData = raw;
     } catch (e) {
       return res.status(200).json({ valid: false, error: 'Error al leer el código' });
