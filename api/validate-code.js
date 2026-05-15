@@ -85,10 +85,12 @@ export default async function handler(req, res) {
 
     let codeData;
     try {
-      // Parseo robusto — soporta 1, 2 o 3 niveles de anidamiento JSON
+      // Parseo flexible — soporta objeto directo, string JSON, o array de strings
       let raw = upstashData.result;
-      while (Array.isArray(raw)) raw = raw[0];
-      while (typeof raw === 'string') { try { raw = JSON.parse(raw); } catch(e) { break; } }
+      if (Array.isArray(raw)) raw = raw[0];  // ["{ json }"] → "{ json }"
+      if (typeof raw === 'string') raw = JSON.parse(raw);  // "{ json }" → { json }
+      // Si sigue siendo string (doble stringify), parsear una vez más
+      if (typeof raw === 'string') raw = JSON.parse(raw);
       codeData = raw;
     } catch (e) {
       return res.status(200).json({ valid: false, error: 'Error al leer el código' });
