@@ -160,9 +160,15 @@ export default async function handler(req, res) {
         const getResp = await fetch(`${kvUrl}/get/code:${userCode}`, { headers: kvHeaders });
         const getData = await getResp.json();
         if (getData.result) {
+          // Parseo robusto — soporta 1, 2 o 3 niveles de anidamiento JSON
           let raw = getData.result;
-          if (Array.isArray(raw)) raw = raw[0];
-          const codeData = typeof raw === 'string' ? JSON.parse(raw) : raw;
+          // Desenvuelve arrays recursivamente
+          while (Array.isArray(raw)) raw = raw[0];
+          // Desenvuelve strings JSON recursivamente hasta obtener un objeto
+          while (typeof raw === 'string') {
+            try { raw = JSON.parse(raw); } catch(e) { break; }
+          }
+          const codeData = raw;
           codeData.usos_usados = (codeData.usos_usados || 0) + 1;
           await fetch(`${kvUrl}/set/code:${userCode}`, {
             method: 'POST',
