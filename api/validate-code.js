@@ -85,10 +85,11 @@ export default async function handler(req, res) {
 
     let codeData;
     try {
-      // Upstash puede devolver ["{ json }"] o "{ json }" según cómo se guardó
+      // Parseo robusto — soporta 1, 2 o 3 niveles de anidamiento JSON
       let raw = upstashData.result;
-      if (Array.isArray(raw)) raw = raw[0];
-      codeData = typeof raw === 'string' ? JSON.parse(raw) : raw;
+      while (Array.isArray(raw)) raw = raw[0];
+      while (typeof raw === 'string') { try { raw = JSON.parse(raw); } catch(e) { break; } }
+      codeData = raw;
     } catch (e) {
       return res.status(200).json({ valid: false, error: 'Error al leer el código' });
     }
