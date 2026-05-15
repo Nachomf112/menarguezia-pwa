@@ -174,6 +174,7 @@ export default async function handler(req, res) {
     // ── RESPUESTA OK ──────────────────────────────────────────
     return res.status(200).json({
       valid: true,
+      code: cleanCode,        // el código normalizado para usarlo en analyze.js
       nombre: codeData.nombre || 'Usuario',
       empresa: codeData.empresa || '',
       modulos: codeData.modulos || ['all'],
