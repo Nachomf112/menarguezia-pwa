@@ -1157,7 +1157,7 @@ if(typeof pdfjsLib !== 'undefined') pdfjsLib.GlobalWorkerOptions.workerSrc = 'ht
    </section>
 
    <footer>
-    <div>© 2026 Menarguez-IA Solutions · Enterprise AI Platform</div>
+    <div>© 2026 Menarguez-IA Solutions · Mobile SaaS Demo</div>
     <a href="https://ai.menarguez-ia.com/" target="_blank" rel="noopener">ai.menarguez-ia.com ↗</a>
    </footer>
   </main>
@@ -1453,6 +1453,7 @@ async function login(){
    return;
   }
   // ✅ Acceso correcto
+  // data.code viene de validate-code.js — lo guardamos para enviarlo en cada análisis
   currentUser=data;
   $('login').style.display='none';
   document.body.style.overflow='';
@@ -1536,6 +1537,16 @@ function loadDetector(){
  toast('Ejemplo cargado');
 }
 
+// ── HELPER FETCH ANALYZE ─────────────────────────────────────
+// Centraliza todas las llamadas a /api/analyze añadiendo el código
+// del usuario para que analyze.js pueda incrementar usos_usados en Upstash.
+function analyzeBody(body) {
+ if (currentUser && currentUser.code) {
+  body.userCode = currentUser.code;
+ }
+ return JSON.stringify(body);
+}
+
 async function runDetector(){
  const txt = $('detectorText').value.trim();
  if(!txt){alert('Introduce un texto');return;}
@@ -1564,7 +1575,7 @@ async function runDetector(){
    + '{"nombre":"nombre corto","nivel":"alto"|"medio"|"bajo","descripcion":"max 65 chars","es_humano":true|false},'
    + '{"nombre":"nombre corto","nivel":"alto"|"medio"|"bajo","descripcion":"max 65 chars","es_humano":true|false}],'
    + '"temperatura_humana":numero 0-100,"recomendacion":"frase directa max 80 chars","resumen":"analisis matizado en 2-3 frases mencionando los factores mas determinantes y por que se descarta o confirma la escritura humana"}';
-  const resp = await fetch('/api/analyze',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1000,messages:[{role:'user',content:prompt}]})});
+  const resp = await fetch('/api/analyze',{method:'POST',headers:{'Content-Type':'application/json'},body:analyzeBody({model:'claude-sonnet-4-20250514',max_tokens:1000,messages:[{role:'user',content:prompt}]})});
   const data = await resp.json();
 
   if(resp.status === 429) {
@@ -1722,7 +1733,7 @@ async function runLinkedin(){
  $('linkedinOutput').innerHTML='<div style="display:flex;align-items:center;gap:10px;color:var(--muted);padding:8px 0"><span style="display:inline-block;width:14px;height:14px;border:2px solid var(--brand2);border-top-color:transparent;border-radius:50%;animation:spin .7s linear infinite"></span> Generando post...</div>';
  try {
   const prompt = 'Eres un experto en LinkedIn con miles de seguidores. Convierte la siguiente idea en un post viral de LinkedIn en español.\n\nREGLAS:\n- Empieza con un gancho potente en la primera línea\n- Usa saltos de línea cortos para facilitar la lectura en móvil\n- Añade entre 3 y 5 emojis relevantes\n- Incluye entre 3 y 5 hashtags al final\n- Tono auténtico y personal, no corporativo\n- Máximo 1300 caracteres\n- Incluye al final un comentario de primer comentario para aumentar el alcance\n\nIDEA:\n' + txt + '\n\nResponde ÚNICAMENTE con el post listo para publicar, sin explicaciones.';
-  const resp = await fetch('/api/analyze',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:800,messages:[{role:'user',content:prompt}]})});
+  const resp = await fetch('/api/analyze',{method:'POST',headers:{'Content-Type':'application/json'},body:analyzeBody({model:'claude-sonnet-4-20250514',max_tokens:800,messages:[{role:'user',content:prompt}]})});
   const data = await resp.json();
   if(resp.status===429){$('linkedinOutput').innerHTML='<div style="background:#FAEEDA;border:1px solid #EF9F27;border-radius:8px;padding:14px;color:#633806;font-size:13px">'+data.message+'</div>';return;}
   const post = data.content.map(function(i){return i.text||'';}).join('').trim();
@@ -1751,7 +1762,7 @@ async function runReputation(){
  $('reputationOutput').innerHTML='<div style="display:flex;align-items:center;gap:10px;color:var(--muted);padding:8px 0"><span style="display:inline-block;width:14px;height:14px;border:2px solid var(--brand2);border-top-color:transparent;border-radius:50%;animation:spin .7s linear infinite"></span> Analizando reputación...</div>';
  try {
   const prompt = 'Eres un experto en gestión de reputación online y crisis de comunicación. Analiza el siguiente comentario o reseña.\n\nCOMENTARIO:\n' + txt + '\n\nResponde ÚNICAMENTE con JSON válido sin markdown:\n{"riesgo":"ALTO"|"MEDIO"|"BAJO","sentimiento":"muy negativo"|"negativo"|"neutro"|"positivo","es_fake":true|false,"urgencia":"inmediata"|"alta"|"media"|"baja","senales":["señal 1","señal 2","señal 3"],"respuesta_sugerida":"respuesta pública profesional y empática max 200 chars","accion_interna":"acción interna recomendada max 100 chars","resumen":"análisis en 2 frases"}';
-  const resp = await fetch('/api/analyze',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:600,messages:[{role:'user',content:prompt}]})});
+  const resp = await fetch('/api/analyze',{method:'POST',headers:{'Content-Type':'application/json'},body:analyzeBody({model:'claude-sonnet-4-20250514',max_tokens:600,messages:[{role:'user',content:prompt}]})});
   const data = await resp.json();
   if(resp.status===429){$('reputationOutput').innerHTML='<div style="background:#FAEEDA;border:1px solid #EF9F27;border-radius:8px;padding:14px;color:#633806;font-size:13px">'+data.message+'</div>';return;}
   const raw = data.content.map(function(i){return i.text||'';}).join('').replace(/```json|```/g,'').trim();
@@ -1789,7 +1800,7 @@ async function runSOC(){
  $('socOutput').innerHTML='<div style="display:flex;align-items:center;gap:10px;color:var(--muted);padding:8px 0"><span style="display:inline-block;width:14px;height:14px;border:2px solid var(--brand2);border-top-color:transparent;border-radius:50%;animation:spin .7s linear infinite"></span> Analizando logs...</div>';
  try {
   const prompt = 'Eres un analista SOC / Blue Team experto en ciberseguridad. Analiza el siguiente log o evento de seguridad.\n\nLOG:\n' + txt + '\n\nResponde ÚNICAMENTE con JSON válido sin markdown:\n{"amenaza":"nombre de la amenaza","severidad":"CRITICA"|"ALTA"|"MEDIA"|"BAJA","mitre_tecnica":"ID y nombre MITRE ATT&CK","ioc":["ioc1","ioc2"],"acciones":["accion1","accion2","accion3"],"explicacion":"explicación técnica en 2 frases","falso_positivo":true|false,"confianza":numero 0-100}';
-  const resp = await fetch('/api/analyze',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:600,messages:[{role:'user',content:prompt}]})});
+  const resp = await fetch('/api/analyze',{method:'POST',headers:{'Content-Type':'application/json'},body:analyzeBody({model:'claude-sonnet-4-20250514',max_tokens:600,messages:[{role:'user',content:prompt}]})});
   const data = await resp.json();
   if(resp.status===429){$('socOutput').innerHTML='<div style="background:#FAEEDA;border:1px solid #EF9F27;border-radius:8px;padding:14px;color:#633806;font-size:13px">'+data.message+'</div>';return;}
   const raw = data.content.map(function(i){return i.text||'';}).join('').replace(/```json|```/g,'').trim();
@@ -1828,7 +1839,7 @@ async function runCompliance(){
  $('complianceOutput').innerHTML='<div style="display:flex;align-items:center;gap:10px;color:var(--muted);padding:8px 0"><span style="display:inline-block;width:14px;height:14px;border:2px solid var(--brand2);border-top-color:transparent;border-radius:50%;animation:spin .7s linear infinite"></span> Evaluando compliance...</div>';
  try {
   const prompt = 'Eres un experto en cumplimiento normativo de IA, RGPD, Ley de IA de la UE y protección de datos. Evalúa el siguiente caso de uso de IA.\n\nCASO DE USO:\n' + txt + '\n\nResponde ÚNICAMENTE con JSON válido sin markdown:\n{"riesgo_rgpd":"ALTO"|"MEDIO"|"BAJO","riesgo_ley_ia":"ALTO"|"MEDIO"|"BAJO"|"NO APLICA","base_legal":"base legal recomendada","datos_personales":true|false,"requiere_dpia":true|false,"recomendaciones":["rec1","rec2","rec3","rec4"],"semaforo":"VERDE"|"AMARILLO"|"ROJO","resumen":"evaluación en 2-3 frases con los puntos críticos"}';
-  const resp = await fetch('/api/analyze',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:600,messages:[{role:'user',content:prompt}]})});
+  const resp = await fetch('/api/analyze',{method:'POST',headers:{'Content-Type':'application/json'},body:analyzeBody({model:'claude-sonnet-4-20250514',max_tokens:600,messages:[{role:'user',content:prompt}]})});
   const data = await resp.json();
   if(resp.status===429){$('complianceOutput').innerHTML='<div style="background:#FAEEDA;border:1px solid #EF9F27;border-radius:8px;padding:14px;color:#633806;font-size:13px">'+data.message+'</div>';return;}
   const raw = data.content.map(function(i){return i.text||'';}).join('').replace(/```json|```/g,'').trim();
