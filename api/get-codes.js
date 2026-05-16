@@ -70,7 +70,7 @@ export default async function handler(req, res) {
       await fetch(`${url}/set/code:${code}`, {
         method: 'POST',
         headers,
-        body: JSON.stringify([JSON.stringify(codeData)])
+        body: JSON.stringify(codeData)
       });
 
       return res.status(200).json({ ok: true, message: 'Fingerprint reseteado' });
@@ -102,7 +102,7 @@ export default async function handler(req, res) {
       await fetch(`${url}/set/code:${code}`, {
         method: 'POST',
         headers,
-        body: JSON.stringify([JSON.stringify(codeData)])
+        body: JSON.stringify(codeData)
       });
 
       return res.status(200).json({ ok: true, activo: codeData.activo });
