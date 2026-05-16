@@ -272,7 +272,10 @@ async function loadData(isLogin) {
     if (isLogin) {
       document.getElementById('loginWrap').style.display = 'none';
       document.getElementById('adminPanel').style.display = 'block';
-      refreshInterval = setInterval(() => loadData(false), 30000);
+      refreshInterval = setInterval(() => {
+        loadData(false);
+        loadCodes(); // auto-refresh códigos cada 30 segundos
+      }, 30000);
       document.getElementById('codesSection').style.display = 'block';
       loadCodes();
     }
