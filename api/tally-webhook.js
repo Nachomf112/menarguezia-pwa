@@ -29,11 +29,9 @@ const USOS_POR_PLAN = {
 // ── GENERAR CÓDIGO ÚNICO ──────────────────────────────────────
 function generarCodigo(nombre) {
   const prefijo = nombre.substring(0, 4).toUpperCase().replace(/[^A-Z]/g, 'X');
-  const fecha = new Date().toLocaleDateString('es-ES', {
-    day: '2-digit', month: '2-digit', timeZone: 'Europe/Madrid'
-  }).replace('/', '');
-  const aleatorio = Math.floor(Math.random() * 9000) + 1000;
-  return `${prefijo}-${fecha}-${aleatorio}`;
+  const parte1 = Math.random().toString(36).substring(2, 6).toUpperCase();
+  const parte2 = Math.floor(Math.random() * 9000) + 1000;
+  return `${prefijo}-${parte1}-${parte2}`;
 }
 
 // ── CALCULAR FECHA EXPIRACIÓN ─────────────────────────────────
