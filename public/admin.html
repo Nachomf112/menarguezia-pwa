@@ -16,8 +16,6 @@
   --border:#e5e4df;--bg:#f5f4f1;--surface:#fff;--surface2:#f5f4f1;
 }
 body{font-family:'Geist',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
-
-/* LOGIN */
 .login-wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px}
 .login-card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:40px;width:100%;max-width:360px;text-align:center}
 .login-logo{width:48px;height:48px;background:var(--brand);border-radius:12px;display:flex;align-items:center;justify-content:center;margin:0 auto 20px}
@@ -29,8 +27,6 @@ body{font-family:'Geist',sans-serif;background:var(--bg);color:var(--text);min-h
 .login-btn{width:100%;padding:11px;background:var(--brand);color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:600;font-family:inherit;cursor:pointer}
 .login-btn:hover{opacity:.85}
 .login-err{color:var(--red);font-size:13px;margin-top:10px;display:none}
-
-/* ADMIN */
 .admin{display:none}
 .topbar{background:var(--brand);color:#fff;padding:14px 24px;display:flex;align-items:center;justify-content:space-between}
 .topbar-brand{display:flex;align-items:center;gap:10px}
@@ -42,23 +38,17 @@ body{font-family:'Geist',sans-serif;background:var(--bg);color:var(--text);min-h
 .dot-pulse{width:7px;height:7px;border-radius:50%;background:#5DCAA5;animation:pulse 2s infinite}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
 .logout-btn{font-size:12px;background:rgba(255,255,255,.15);border:none;color:#fff;padding:5px 12px;border-radius:6px;cursor:pointer;font-family:inherit}
-
 .main{max-width:1100px;margin:0 auto;padding:28px 20px}
-
 .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:24px}
 @media(max-width:600px){.stats{grid-template-columns:1fr 1fr}}
 .stat{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:18px;text-align:center}
 .stat-val{font-size:32px;font-weight:700;letter-spacing:-.04em;color:var(--brand)}
 .stat-lbl{font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:.07em;margin-top:4px}
-
-/* TOOLBAR */
 .toolbar{display:flex;align-items:center;justify-content:space-between;padding:14px 20px;border-bottom:1px solid var(--border);flex-wrap:wrap;gap:10px}
 .toolbar-left{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
 .toolbar-title{font-size:14px;font-weight:600}
 .toolbar-right{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
 .refresh-info{font-size:12px;color:var(--text3)}
-
-/* BOTONES TOOLBAR */
 .btn-tool{display:inline-flex;align-items:center;gap:6px;padding:7px 14px;border-radius:8px;font-size:12px;font-weight:600;font-family:inherit;cursor:pointer;border:1px solid var(--border);background:var(--surface);color:var(--text2);transition:all .15s}
 .btn-tool:hover{background:var(--surface2);border-color:#ccc}
 .btn-tool:disabled{opacity:.4;cursor:not-allowed}
@@ -68,13 +58,9 @@ body{font-family:'Geist',sans-serif;background:var(--bg);color:var(--text);min-h
 .btn-delete:hover{background:#f5d5d5}
 .btn-select-all{background:var(--brand-light);color:var(--brand);border-color:rgba(60,52,137,.25)}
 .btn-select-all:hover{background:#dddcf8}
-
 .table-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;overflow:hidden}
-
-/* SELECCIÓN BADGE */
 .selection-bar{display:none;background:var(--brand-light);border-bottom:1px solid rgba(60,52,137,.15);padding:8px 20px;font-size:13px;color:var(--brand);font-weight:500;align-items:center;gap:12px}
 .selection-bar.visible{display:flex}
-
 table{width:100%;border-collapse:collapse}
 thead th{background:var(--surface2);padding:10px 16px;text-align:left;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--text3);border-bottom:1px solid var(--border);white-space:nowrap}
 thead th:first-child{width:36px;text-align:center}
@@ -86,10 +72,7 @@ tbody tr.new-row{animation:highlight .8s ease}
 @keyframes highlight{from{background:var(--brand-light)}to{background:transparent}}
 tbody td{padding:11px 16px;font-size:13px;color:var(--text2)}
 tbody td:first-child{text-align:center}
-
-/* CHECKBOX */
 input[type=checkbox]{width:15px;height:15px;accent-color:var(--brand);cursor:pointer}
-
 .td-fecha{font-family:'Geist Mono',monospace;font-size:11px;color:var(--text3);white-space:nowrap}
 .td-hora{font-family:'Geist Mono',monospace;font-size:12px;color:var(--brand-mid);font-weight:500;white-space:nowrap}
 .td-nombre{font-weight:500;color:var(--text)}
@@ -98,7 +81,6 @@ input[type=checkbox]{width:15px;height:15px;accent-color:var(--brand);cursor:poi
 .d-mobile{background:var(--green-light);color:var(--green)}
 .d-desktop{background:var(--brand-light);color:var(--brand)}
 .d-tablet{background:var(--amber-light);color:var(--amber)}
-
 .empty{text-align:center;padding:48px;color:var(--text3);font-size:14px}
 .loading{text-align:center;padding:48px}
 .dots{display:flex;gap:6px;justify-content:center}
@@ -106,8 +88,6 @@ input[type=checkbox]{width:15px;height:15px;accent-color:var(--brand);cursor:poi
 .dot:nth-child(2){animation-delay:.2s}
 .dot:nth-child(3){animation-delay:.4s}
 @keyframes blink{0%,80%,100%{opacity:.2}40%{opacity:1}}
-
-/* CONFIRM MODAL */
 .modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:100;align-items:center;justify-content:center}
 .modal-bg.open{display:flex}
 .modal{background:#fff;border-radius:14px;padding:28px;max-width:380px;width:90%;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.2)}
@@ -117,10 +97,7 @@ input[type=checkbox]{width:15px;height:15px;accent-color:var(--brand);cursor:poi
 .modal-btns button{padding:9px 22px;border-radius:8px;font-size:13px;font-weight:600;font-family:inherit;cursor:pointer;border:1px solid var(--border)}
 .modal-confirm{background:var(--red);color:#fff;border-color:var(--red)}
 .modal-cancel{background:var(--surface);color:var(--text2)}
-
 .footer{text-align:center;margin-top:24px;font-size:12px;color:var(--text3)}
-
-/* SECCIÓN CÓDIGOS */
 .codes-section{margin-top:24px}
 .codes-table-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;overflow:hidden}
 .code-badge{font-size:11px;font-weight:700;padding:3px 9px;border-radius:20px;font-family:'Geist Mono',monospace}
@@ -142,26 +119,19 @@ input[type=checkbox]{width:15px;height:15px;accent-color:var(--brand);cursor:poi
 .fp-badge{font-size:10px;font-weight:600;padding:2px 8px;border-radius:20px}
 .fp-yes{background:var(--green-light);color:var(--green)}
 .fp-no{background:#f0efe8;color:#999}
-
-/* CODES TOOLBAR */
 .codes-toolbar{display:flex;align-items:center;justify-content:space-between;padding:14px 20px;border-bottom:1px solid var(--border);flex-wrap:wrap;gap:10px}
 .codes-toolbar-left{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
 .codes-toolbar-right{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
 .codes-title{font-size:14px;font-weight:600}
-
-/* CODES SELECTION BAR */
 .codes-sel-bar{display:none;background:var(--red-light);border-bottom:1px solid rgba(163,45,45,.15);padding:8px 20px;font-size:13px;color:var(--red);font-weight:500;align-items:center;gap:12px}
 .codes-sel-bar.visible{display:flex}
 </style>
 </head>
 <body>
 
-<!-- LOGIN -->
 <div class="login-wrap" id="loginWrap">
   <div class="login-card">
-    <div class="login-logo">
-      <svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-    </div>
+    <div class="login-logo"><svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>
     <h1>Panel de administración</h1>
     <p>Menarguez-IA Solutions · Acceso restringido</p>
     <input type="password" class="login-input" id="pwdInput" placeholder="Contraseña de administrador" onkeydown="if(event.key==='Enter')doLogin()">
@@ -170,13 +140,10 @@ input[type=checkbox]{width:15px;height:15px;accent-color:var(--brand);cursor:poi
   </div>
 </div>
 
-<!-- PANEL -->
 <div class="admin" id="adminPanel">
   <div class="topbar">
     <div class="topbar-brand">
-      <div class="topbar-logo">
-        <svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-      </div>
+      <div class="topbar-logo"><svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>
       <span class="topbar-name">Menarguez-IA · Panel Admin</span>
     </div>
     <div class="topbar-right">
@@ -193,7 +160,6 @@ input[type=checkbox]{width:15px;height:15px;accent-color:var(--brand);cursor:poi
       <div class="stat"><div class="stat-val" id="statHoy">—</div><div class="stat-lbl">Accesos hoy</div></div>
     </div>
 
-    <!-- TABLA ACCESOS -->
     <div class="table-card">
       <div class="toolbar">
         <div class="toolbar-left">
@@ -206,23 +172,32 @@ input[type=checkbox]{width:15px;height:15px;accent-color:var(--brand);cursor:poi
           <button class="btn-tool btn-delete" id="btnDelete" onclick="confirmDelete()" disabled>🗑 Borrar seleccionados</button>
         </div>
       </div>
-
       <div class="selection-bar" id="selectionBar">
         <span id="selectionCount">0 filas seleccionadas</span>
         <button class="btn-tool btn-delete" style="padding:4px 12px;font-size:11px" onclick="confirmDelete()">🗑 Borrar seleccionados</button>
         <button class="btn-tool" style="padding:4px 12px;font-size:11px" onclick="clearSelection()">✕ Cancelar</button>
       </div>
-
       <div id="tableWrap">
         <div class="loading"><div class="dots"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div></div>
+      </div>
+    </div>
+
+    <!-- DASHBOARD ANALYTICS -->
+    <div class="codes-section" id="dashboardSection" style="display:none">
+      <div class="codes-table-card">
+        <div class="codes-toolbar">
+          <div class="codes-toolbar-left"><div class="codes-title">📊 Dashboard de analytics</div></div>
+          <div class="codes-toolbar-right"><button class="btn-tool" onclick="loadStats()">↻ Actualizar</button></div>
+        </div>
+        <div id="dashboardWrap" style="padding:20px">
+          <div class="loading"><div class="dots"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div></div>
+        </div>
       </div>
     </div>
 
     <!-- SECCIÓN CÓDIGOS -->
     <div class="codes-section" id="codesSection" style="display:none">
       <div class="codes-table-card">
-
-        <!-- TOOLBAR CÓDIGOS -->
         <div class="codes-toolbar">
           <div class="codes-toolbar-left">
             <div class="codes-title">🔑 Gestión de códigos de acceso</div>
@@ -234,14 +209,11 @@ input[type=checkbox]{width:15px;height:15px;accent-color:var(--brand);cursor:poi
             <button class="btn-tool" onclick="loadCodes()">↻ Actualizar</button>
           </div>
         </div>
-
-        <!-- BARRA SELECCIÓN CÓDIGOS -->
         <div class="codes-sel-bar" id="codesSelBar">
           <span id="codesSelCount">0 códigos seleccionados</span>
           <button class="btn-tool btn-delete" style="padding:4px 12px;font-size:11px" onclick="confirmDeleteCodes()">🗑 Borrar seleccionados</button>
           <button class="btn-tool" style="padding:4px 12px;font-size:11px" onclick="clearCodeSelection()">✕ Cancelar</button>
         </div>
-
         <div id="codesWrap">
           <div class="loading"><div class="dots"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div></div>
         </div>
@@ -252,7 +224,6 @@ input[type=checkbox]{width:15px;height:15px;accent-color:var(--brand);cursor:poi
   </div>
 </div>
 
-<!-- MODAL ACCESOS -->
 <div class="modal-bg" id="modalBg">
   <div class="modal">
     <h3>⚠ Confirmar borrado</h3>
@@ -264,11 +235,10 @@ input[type=checkbox]{width:15px;height:15px;accent-color:var(--brand);cursor:poi
   </div>
 </div>
 
-<!-- MODAL CÓDIGOS -->
 <div class="modal-bg" id="modalCodesBg">
   <div class="modal">
     <h3>⚠ Confirmar borrado de códigos</h3>
-    <p id="modalCodesMsg">¿Seguro que quieres borrar los códigos seleccionados? Esta acción no se puede deshacer.</p>
+    <p id="modalCodesMsg">¿Seguro que quieres borrar los códigos seleccionados?</p>
     <div class="modal-btns">
       <button class="modal-cancel" onclick="closeCodesModal()">Cancelar</button>
       <button class="modal-confirm" onclick="executeDeleteCodes()">Sí, borrar</button>
@@ -282,8 +252,6 @@ let refreshInterval = null;
 let lastCount = 0;
 let allEntries = [];
 let selectedIds = new Set();
-
-// ── ESTADO CÓDIGOS ────────────────────────────────────────────
 let allCodes = [];
 let selectedCodes = new Set();
 
@@ -322,8 +290,11 @@ async function loadData(isLogin) {
       refreshInterval = setInterval(() => {
         loadData(false);
         loadCodes();
+        loadStats();
       }, 30000);
+      document.getElementById('dashboardSection').style.display = 'block';
       document.getElementById('codesSection').style.display = 'block';
+      loadStats();
       loadCodes();
     }
 
@@ -343,55 +314,39 @@ function renderData(entries, isLogin) {
   const nombres = new Set(entries.map(e => e.nombre.toLowerCase()));
   const empresas = new Set(entries.map(e => e.empresa.toLowerCase()).filter(e => e !== 'no especificada'));
   const hoy = entries.filter(e => e.fecha === today).length;
-
   document.getElementById('statTotal').textContent = entries.length;
   document.getElementById('statUnicos').textContent = nombres.size;
   document.getElementById('statEmpresas').textContent = empresas.size;
   document.getElementById('statHoy').textContent = hoy;
-
   const now = new Date().toLocaleTimeString('es-ES', {hour:'2-digit',minute:'2-digit',second:'2-digit'});
   document.getElementById('refreshInfo').textContent = 'Última actualización: ' + now;
-
   const isNew = !isLogin && entries.length > lastCount;
   lastCount = entries.length;
-
   if (!entries.length) {
     document.getElementById('tableWrap').innerHTML = '<div class="empty">No hay accesos registrados todavía.</div>';
     return;
   }
-
   const rows = entries.map((e, i) => {
     const devClass = e.dispositivo === 'Móvil' ? 'd-mobile' : e.dispositivo === 'Tablet' ? 'd-tablet' : 'd-desktop';
     const newClass = (isNew && i === 0) ? 'new-row' : '';
     const checked = selectedIds.has(i) ? 'checked' : '';
     const selClass = selectedIds.has(i) ? 'selected' : '';
-    return `<tr class="${newClass} ${selClass}" data-idx="${i}">
-      <td><input type="checkbox" ${checked} onchange="toggleRow(${i}, this.checked)"></td>
-      <td class="td-fecha">${e.fecha}</td>
-      <td class="td-hora">${e.hora}</td>
-      <td class="td-nombre">${e.nombre}</td>
-      <td class="td-empresa">${e.empresa}</td>
-      <td class="td-device"><span class="${devClass}">${e.dispositivo}</span></td>
-    </tr>`;
+    return '<tr class="'+newClass+' '+selClass+'" data-idx="'+i+'">'
+      + '<td><input type="checkbox" '+checked+' onchange="toggleRow('+i+', this.checked)"></td>'
+      + '<td class="td-fecha">'+e.fecha+'</td>'
+      + '<td class="td-hora">'+e.hora+'</td>'
+      + '<td class="td-nombre">'+e.nombre+'</td>'
+      + '<td class="td-empresa">'+e.empresa+'</td>'
+      + '<td class="td-device"><span class="'+devClass+'">'+e.dispositivo+'</span></td>'
+      + '</tr>';
   }).join('');
-
-  document.getElementById('tableWrap').innerHTML = `
-    <table>
-      <thead><tr>
-        <th></th>
-        <th>📅 Fecha</th><th>🕐 Hora</th>
-        <th>👤 Nombre</th><th>🏢 Empresa</th><th>📱 Dispositivo</th>
-      </tr></thead>
-      <tbody>${rows}</tbody>
-    </table>`;
-
+  document.getElementById('tableWrap').innerHTML = '<table><thead><tr><th></th><th>📅 Fecha</th><th>🕐 Hora</th><th>👤 Nombre</th><th>🏢 Empresa</th><th>📱 Dispositivo</th></tr></thead><tbody>'+rows+'</tbody></table>';
   updateSelectionUI();
 }
 
-// ── SELECCIÓN ACCESOS ─────────────────────────────────────────
 function toggleRow(idx, checked) {
   if (checked) selectedIds.add(idx); else selectedIds.delete(idx);
-  const row = document.querySelector('tr[data-idx="' + idx + '"]');
+  const row = document.querySelector('tr[data-idx="'+idx+'"]');
   if (row) row.classList.toggle('selected', checked);
   updateSelectionUI();
 }
@@ -416,29 +371,24 @@ function updateSelectionUI() {
   document.getElementById('btnSelectAll').textContent = (count === allEntries.length && count > 0) ? '☑ Deseleccionar todo' : '☐ Seleccionar todo';
 }
 
-// ── EXPORTAR CSV ACCESOS ──────────────────────────────────────
 function exportCSV() {
   if (!allEntries.length) return;
   const headers = ['Fecha', 'Hora', 'Nombre', 'Empresa', 'Dispositivo'];
-  const rows = allEntries.map(e =>
-    [e.fecha, e.hora, '"' + e.nombre + '"', '"' + e.empresa + '"', e.dispositivo].join(',')
-  );
+  const rows = allEntries.map(e => [e.fecha, e.hora, '"'+e.nombre+'"', '"'+e.empresa+'"', e.dispositivo].join(','));
   const csv = [headers.join(','), ...rows].join('\n');
-  const blob = new Blob(['\uFEFF' + csv], {type:'text/csv;charset=utf-8'});
+  const blob = new Blob(['\uFEFF'+csv], {type:'text/csv;charset=utf-8'});
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
-  a.download = 'accesos_menarguez_ia_' + new Date().toISOString().slice(0,10) + '.csv';
+  a.download = 'accesos_menarguez_ia_'+new Date().toISOString().slice(0,10)+'.csv';
   a.click();
 }
 
-// ── BORRADO ACCESOS ───────────────────────────────────────────
 let pendingDeleteIds = null;
 
 function confirmDelete() {
   if (selectedIds.size === 0) return;
   pendingDeleteIds = new Set(selectedIds);
-  document.getElementById('modalMsg').textContent =
-    '¿Seguro que quieres borrar ' + pendingDeleteIds.size + ' ' + (pendingDeleteIds.size === 1 ? 'registro' : 'registros') + '? Esta acción no se puede deshacer.';
+  document.getElementById('modalMsg').textContent = '¿Seguro que quieres borrar '+pendingDeleteIds.size+' '+(pendingDeleteIds.size === 1 ? 'registro' : 'registros')+'? Esta acción no se puede deshacer.';
   document.getElementById('modalBg').classList.add('open');
 }
 
@@ -449,7 +399,6 @@ function closeModal() {
 
 async function executeDelete() {
   if (!pendingDeleteIds) return;
-  // Recoger los _listIdx reales de Upstash de las entradas seleccionadas
   const listIdxsToDelete = Array.from(pendingDeleteIds).map(i => allEntries[i]._listIdx);
   closeModal();
   try {
@@ -462,7 +411,7 @@ async function executeDelete() {
     if (!data.ok) throw new Error(data.error);
     selectedIds.clear();
     pendingDeleteIds = null;
-    loadData(false); // recarga desde Upstash para confirmar
+    loadData(false);
   } catch(e) {
     alert('Error al borrar: ' + e.message);
   }
@@ -472,7 +421,6 @@ document.getElementById('modalBg').addEventListener('click', function(e) {
   if (e.target === this) closeModal();
 });
 
-// ── GESTIÓN DE CÓDIGOS ────────────────────────────────────────
 async function loadCodes() {
   const wrap = document.getElementById('codesWrap');
   wrap.innerHTML = '<div class="loading"><div class="dots"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div></div>';
@@ -480,22 +428,15 @@ async function loadCodes() {
     const resp = await fetch('/api/get-codes?pwd=' + encodeURIComponent(adminPwd));
     const data = await resp.json();
     if (!data.ok) throw new Error(data.error);
-    if (!data.codes.length) {
-      wrap.innerHTML = '<div class="empty">No hay códigos registrados.</div>';
-      return;
-    }
-
-    // ── ORDENAR: vinculados primero (por fecha más reciente), luego sin vincular
+    if (!data.codes.length) { wrap.innerHTML = '<div class="empty">No hay códigos registrados.</div>'; return; }
     allCodes = data.codes.sort(function(a, b) {
-      const aFecha = a.dispositivo && a.dispositivo.fecha ? a.dispositivo.fecha : '';
-      const bFecha = b.dispositivo && b.dispositivo.fecha ? b.dispositivo.fecha : '';
-      if (aFecha && !bFecha) return -1;
-      if (!aFecha && bFecha) return 1;
-      return bFecha.localeCompare(aFecha);
+      const aF = a.dispositivo && a.dispositivo.fecha ? a.dispositivo.fecha : '';
+      const bF = b.dispositivo && b.dispositivo.fecha ? b.dispositivo.fecha : '';
+      if (aF && !bF) return -1;
+      if (!aF && bF) return 1;
+      return bF.localeCompare(aF);
     });
-
     renderCodes();
-
   } catch(e) {
     wrap.innerHTML = '<div class="empty">Error: ' + e.message + '</div>';
   }
@@ -503,10 +444,9 @@ async function loadCodes() {
 
 function renderCodes() {
   const wrap = document.getElementById('codesWrap');
-
   const rows = allCodes.map(function(c) {
-    var planClass = 'plan-' + (c.plan || 'free');
-    var planLabel = (c.plan || 'free').toUpperCase();
+    var planClass = 'plan-'+(c.plan||'free');
+    var planLabel = (c.plan||'free').toUpperCase();
     var activoDot = c.activo ? 'status-active' : 'status-inactive';
     var activoLabel = c.activo ? 'Activo' : 'Inactivo';
     var toggleLabel = c.activo ? 'Desactivar' : 'Activar';
@@ -515,51 +455,36 @@ function renderCodes() {
     var fpClass = c.vinculado ? 'fp-yes' : 'fp-no';
     var dispositivoInfo = '';
     if (c.vinculado && c.dispositivo) {
-      dispositivoInfo = '<div style="font-size:10px;color:var(--text3);margin-top:3px">'
-        + c.dispositivo.os + ' &middot; ' + c.dispositivo.browser + '</div>'
-        + '<div style="font-size:10px;color:var(--text3)">IP: ' + c.dispositivo.ip + '</div>'
-        + '<div style="font-size:10px;color:var(--text3)">' + (c.dispositivo.fecha||'') + ' ' + (c.dispositivo.hora||'') + '</div>';
+      dispositivoInfo = '<div style="font-size:10px;color:var(--text3);margin-top:3px">'+c.dispositivo.os+' &middot; '+c.dispositivo.browser+'</div>'
+        +'<div style="font-size:10px;color:var(--text3)">IP: '+c.dispositivo.ip+'</div>'
+        +'<div style="font-size:10px;color:var(--text3)">'+(c.dispositivo.fecha||'')+' '+(c.dispositivo.hora||'')+'</div>';
     }
-    var usosLabel = c.usos_max > 0 ? c.usos_usados + ' / ' + c.usos_max : '&#x221E; Sin límite';
-    var resetBtn = c.vinculado
-      ? '<button class="btn-action reset" data-code="'+c.code+'" onclick="resetFingerprint(this.dataset.code)">&#x21BA; Resetear</button>'
-      : '';
+    var usosLabel = c.usos_max > 0 ? c.usos_usados+' / '+c.usos_max : '&#x221E; Sin límite';
+    var resetBtn = c.vinculado ? '<button class="btn-action reset" data-code="'+c.code+'" onclick="resetFingerprint(this.dataset.code)">&#x21BA; Resetear</button>' : '';
     var toggleBtn = '<button class="'+toggleClass+'" data-code="'+c.code+'" data-active="'+c.activo+'" onclick="handleToggle(this)">'+toggleLabel+'</button>';
     var delBtn = '<button class="btn-action del" data-code="'+c.code+'" onclick="confirmDeleteSingleCode(this.dataset.code)">🗑</button>';
     var checked = selectedCodes.has(c.code) ? 'checked' : '';
     var selClass = selectedCodes.has(c.code) ? 'selected' : '';
-
     return '<tr class="'+selClass+'" data-code="'+c.code+'">'
-      + '<td><input type="checkbox" '+checked+' onchange="toggleCodeRow(\''+c.code+'\', this.checked)"></td>'
-      + '<td style="font-family:monospace;font-size:12px;font-weight:700;color:var(--brand)">'+c.code+'</td>'
-      + '<td class="td-nombre">'+c.nombre+'</td>'
-      + '<td class="td-empresa">'+c.empresa+'</td>'
-      + '<td><span class="code-badge '+planClass+'">'+planLabel+'</span></td>'
-      + '<td style="font-size:12px;color:var(--text2)">'+usosLabel+'</td>'
-      + '<td style="font-size:12px;color:var(--text3)">'+(c.expira||'&mdash;')+'</td>'
-      + '<td><span class="status-dot '+activoDot+'"></span>'+activoLabel+'</td>'
-      + '<td><span class="fp-badge '+fpClass+'">'+fpLabel+'</span>'+dispositivoInfo+'</td>'
-      + '<td>'+resetBtn+' '+toggleBtn+' '+delBtn+'</td>'
-      + '</tr>';
+      +'<td><input type="checkbox" '+checked+' onchange="toggleCodeRow(\''+c.code+'\', this.checked)"></td>'
+      +'<td style="font-family:monospace;font-size:12px;font-weight:700;color:var(--brand)">'+c.code+'</td>'
+      +'<td class="td-nombre">'+c.nombre+'</td>'
+      +'<td class="td-empresa">'+c.empresa+'</td>'
+      +'<td><span class="code-badge '+planClass+'">'+planLabel+'</span></td>'
+      +'<td style="font-size:12px;color:var(--text2)">'+usosLabel+'</td>'
+      +'<td style="font-size:12px;color:var(--text3)">'+(c.expira||'&mdash;')+'</td>'
+      +'<td><span class="status-dot '+activoDot+'"></span>'+activoLabel+'</td>'
+      +'<td><span class="fp-badge '+fpClass+'">'+fpLabel+'</span>'+dispositivoInfo+'</td>'
+      +'<td>'+resetBtn+' '+toggleBtn+' '+delBtn+'</td>'
+      +'</tr>';
   }).join('');
-
-  wrap.innerHTML = '<table>'
-    + '<thead><tr>'
-    + '<th></th>'
-    + '<th>🔑 Código</th><th>👤 Usuario</th><th>🏢 Empresa</th>'
-    + '<th>💳 Plan</th><th>📊 Usos</th><th>📅 Expira</th>'
-    + '<th>Estado</th><th>📱 Dispositivo</th><th>Acciones</th>'
-    + '</tr></thead>'
-    + '<tbody>'+rows+'</tbody>'
-    + '</table>';
-
+  wrap.innerHTML = '<table><thead><tr><th></th><th>🔑 Código</th><th>👤 Usuario</th><th>🏢 Empresa</th><th>💳 Plan</th><th>📊 Usos</th><th>📅 Expira</th><th>Estado</th><th>📱 Dispositivo</th><th>Acciones</th></tr></thead><tbody>'+rows+'</tbody></table>';
   updateCodesSelectionUI();
 }
 
-// ── SELECCIÓN CÓDIGOS ─────────────────────────────────────────
 function toggleCodeRow(code, checked) {
   if (checked) selectedCodes.add(code); else selectedCodes.delete(code);
-  const row = document.querySelector('tr[data-code="' + code + '"]');
+  const row = document.querySelector('tr[data-code="'+code+'"]');
   if (row) row.classList.toggle('selected', checked);
   updateCodesSelectionUI();
 }
@@ -580,52 +505,34 @@ function updateCodesSelectionUI() {
   const count = selectedCodes.size;
   document.getElementById('btnDeleteCodes').disabled = count === 0;
   document.getElementById('codesSelBar').classList.toggle('visible', count > 0);
-  document.getElementById('codesSelCount').textContent = count + (count === 1 ? ' código seleccionado' : ' códigos seleccionados');
+  document.getElementById('codesSelCount').textContent = count+(count === 1 ? ' código seleccionado' : ' códigos seleccionados');
   document.getElementById('btnSelectAllCodes').textContent = (count === allCodes.length && count > 0) ? '☑ Deseleccionar todo' : '☐ Seleccionar todo';
 }
 
-// ── EXPORTAR CSV CÓDIGOS ──────────────────────────────────────
 function exportCodesCSV() {
   if (!allCodes.length) return;
-  const headers = ['Código', 'Nombre', 'Empresa', 'Plan', 'Usos usados', 'Usos máx', 'Expira', 'Activo', 'Vinculado', 'OS', 'Browser', 'IP', 'Fecha acceso'];
-  const rows = allCodes.map(c => [
-    c.code,
-    '"' + (c.nombre||'') + '"',
-    '"' + (c.empresa||'') + '"',
-    c.plan||'free',
-    c.usos_usados||0,
-    c.usos_max||0,
-    c.expira||'',
-    c.activo ? 'Sí' : 'No',
-    c.vinculado ? 'Sí' : 'No',
-    c.dispositivo ? '"' + (c.dispositivo.os||'') + '"' : '',
-    c.dispositivo ? '"' + (c.dispositivo.browser||'') + '"' : '',
-    c.dispositivo ? (c.dispositivo.ip||'') : '',
-    c.dispositivo ? (c.dispositivo.fecha||'') + ' ' + (c.dispositivo.hora||'') : ''
-  ].join(','));
+  const headers = ['Código','Nombre','Empresa','Plan','Usos usados','Usos máx','Expira','Activo','Vinculado','OS','Browser','IP','Fecha acceso'];
+  const rows = allCodes.map(c => [c.code,'"'+(c.nombre||'')+'"','"'+(c.empresa||'')+'"',c.plan||'free',c.usos_usados||0,c.usos_max||0,c.expira||'',c.activo?'Sí':'No',c.vinculado?'Sí':'No',c.dispositivo?'"'+(c.dispositivo.os||'')+'"':'',c.dispositivo?'"'+(c.dispositivo.browser||'')+'"':'',c.dispositivo?(c.dispositivo.ip||''):'',c.dispositivo?(c.dispositivo.fecha||'')+' '+(c.dispositivo.hora||''):''].join(','));
   const csv = [headers.join(','), ...rows].join('\n');
-  const blob = new Blob(['\uFEFF' + csv], {type:'text/csv;charset=utf-8'});
+  const blob = new Blob(['\uFEFF'+csv], {type:'text/csv;charset=utf-8'});
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
-  a.download = 'codigos_menarguez_ia_' + new Date().toISOString().slice(0,10) + '.csv';
+  a.download = 'codigos_menarguez_ia_'+new Date().toISOString().slice(0,10)+'.csv';
   a.click();
 }
 
-// ── BORRADO CÓDIGOS ───────────────────────────────────────────
 let pendingDeleteCodes = null;
 
 function confirmDeleteCodes() {
   if (selectedCodes.size === 0) return;
   pendingDeleteCodes = new Set(selectedCodes);
-  document.getElementById('modalCodesMsg').textContent =
-    '¿Seguro que quieres borrar ' + pendingDeleteCodes.size + ' ' + (pendingDeleteCodes.size === 1 ? 'código' : 'códigos') + '? Esta acción no se puede deshacer.';
+  document.getElementById('modalCodesMsg').textContent = '¿Seguro que quieres borrar '+pendingDeleteCodes.size+' '+(pendingDeleteCodes.size === 1 ? 'código' : 'códigos')+'? Esta acción no se puede deshacer.';
   document.getElementById('modalCodesBg').classList.add('open');
 }
 
 function confirmDeleteSingleCode(code) {
   pendingDeleteCodes = new Set([code]);
-  document.getElementById('modalCodesMsg').textContent =
-    '¿Seguro que quieres borrar el código ' + code + '? Esta acción no se puede deshacer.';
+  document.getElementById('modalCodesMsg').textContent = '¿Seguro que quieres borrar el código '+code+'? Esta acción no se puede deshacer.';
   document.getElementById('modalCodesBg').classList.add('open');
 }
 
@@ -658,40 +565,143 @@ document.getElementById('modalCodesBg').addEventListener('click', function(e) {
   if (e.target === this) closeCodesModal();
 });
 
-// ── ACCIONES CÓDIGOS ──────────────────────────────────────────
 async function resetFingerprint(code) {
-  if (!confirm('¿Resetear dispositivo vinculado al código ' + code + '?')) return;
+  if (!confirm('¿Resetear dispositivo vinculado al código '+code+'?')) return;
   try {
-    const resp = await fetch('/api/get-codes', {
-      method: 'POST',
-      headers: {'Content-Type':'application/json'},
-      body: JSON.stringify({pwd: adminPwd, action: 'reset-fp', code})
-    });
+    const resp = await fetch('/api/get-codes', {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({pwd:adminPwd,action:'reset-fp',code})});
     const data = await resp.json();
     if (!data.ok) throw new Error(data.error);
     loadCodes();
-  } catch(e) { alert('Error: ' + e.message); }
+  } catch(e) { alert('Error: '+e.message); }
 }
 
 function handleToggle(btn) {
-  var code = btn.dataset.code;
-  var active = btn.dataset.active === 'true';
-  toggleCode(code, active);
+  toggleCode(btn.dataset.code, btn.dataset.active === 'true');
 }
 
 async function toggleCode(code, currentlyActive) {
   const accion = currentlyActive ? 'desactivar' : 'activar';
-  if (!confirm('¿' + accion.charAt(0).toUpperCase() + accion.slice(1) + ' el código ' + code + '?')) return;
+  if (!confirm('¿'+accion.charAt(0).toUpperCase()+accion.slice(1)+' el código '+code+'?')) return;
   try {
-    const resp = await fetch('/api/get-codes', {
-      method: 'POST',
-      headers: {'Content-Type':'application/json'},
-      body: JSON.stringify({pwd: adminPwd, action: 'toggle-active', code})
-    });
+    const resp = await fetch('/api/get-codes', {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({pwd:adminPwd,action:'toggle-active',code})});
     const data = await resp.json();
     if (!data.ok) throw new Error(data.error);
     loadCodes();
-  } catch(e) { alert('Error: ' + e.message); }
+  } catch(e) { alert('Error: '+e.message); }
+}
+
+// ── DASHBOARD ANALYTICS ───────────────────────────────────────
+async function loadStats() {
+  const wrap = document.getElementById('dashboardWrap');
+  if (!wrap) return;
+  try {
+    const resp = await fetch('/api/get-stats?pwd=' + encodeURIComponent(adminPwd));
+    const data = await resp.json();
+    if (!data.ok) throw new Error(data.error);
+
+    const modules = data.modules || {};
+    const daily = data.daily || {};
+    const plans = data.plans || {};
+    const devices = data.devices || {};
+    const topEmpresas = data.topEmpresas || [];
+    const totalAnalisis = data.totalAnalisis || 0;
+
+    const totalCodes = (plans.free||0)+(plans.pro||0)+(plans.business||0)+(plans.enterprise||0);
+    const moduleLabels = {detector:'AI Detector',humanizer:'Humanizer',linkedin:'LinkedIn',reputation:'Reputation',soc:'SOC Assistant',compliance:'AI Compliance'};
+    const moduleColors = {detector:'#534AB7',humanizer:'#534AB7',linkedin:'#534AB7',reputation:'#534AB7',soc:'#1D9E75',compliance:'#534AB7'};
+
+    const dailyKeys = Object.keys(daily);
+    const dailyLabels = dailyKeys.map(k => { const p = k.split('-'); return p[2]+'/'+p[1]; });
+    const dailyValues = Object.values(daily);
+    const modKeys = Object.keys(modules);
+    const modValues = Object.values(modules);
+    const modLabels = modKeys.map(k => moduleLabels[k]||k);
+    const modColors = modKeys.map(k => moduleColors[k]||'#534AB7');
+
+    const totalDev = (devices.Desktop||0)+(devices['Móvil']||0)+(devices.Tablet||0);
+    const pctDev = v => totalDev > 0 ? Math.round(v/totalDev*100) : 0;
+    const pctPlan = v => totalCodes > 0 ? Math.round(v/totalCodes*100) : 0;
+
+    const topEmpHTML = topEmpresas.length
+      ? topEmpresas.map(e => '<div style="display:flex;justify-content:space-between;align-items:center;font-size:12px;padding:5px 0;border-bottom:1px solid var(--border)"><span style="color:var(--text)">'+e.empresa+'</span><span style="background:var(--surface2);padding:2px 8px;border-radius:8px;color:var(--text3)">'+e.usos+' análisis</span></div>').join('')
+      : '<p style="font-size:12px;color:var(--text3);text-align:center;padding:20px 0">Sin datos todavía — realiza análisis en la suite para ver estadísticas</p>';
+
+    wrap.innerHTML =
+      '<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px">'
+      +'<div style="background:var(--surface2);border-radius:10px;padding:14px;text-align:center"><p style="font-size:11px;color:var(--text3);margin:0 0 4px;text-transform:uppercase;letter-spacing:.06em">Total análisis</p><p style="font-size:28px;font-weight:700;margin:0;color:var(--brand)">'+totalAnalisis+'</p></div>'
+      +'<div style="background:var(--surface2);border-radius:10px;padding:14px;text-align:center"><p style="font-size:11px;color:var(--text3);margin:0 0 4px;text-transform:uppercase;letter-spacing:.06em">Usuarios activos</p><p style="font-size:28px;font-weight:700;margin:0;color:var(--brand)">'+totalCodes+'</p></div>'
+      +'<div style="background:var(--surface2);border-radius:10px;padding:14px;text-align:center"><p style="font-size:11px;color:var(--text3);margin:0 0 4px;text-transform:uppercase;letter-spacing:.06em">Módulos usados</p><p style="font-size:28px;font-weight:700;margin:0;color:var(--brand)">'+modKeys.length+'</p></div>'
+      +'<div style="background:var(--surface2);border-radius:10px;padding:14px;text-align:center"><p style="font-size:11px;color:var(--text3);margin:0 0 4px;text-transform:uppercase;letter-spacing:.06em">Hoy</p><p style="font-size:28px;font-weight:700;margin:0;color:var(--brand)">'+(dailyValues[dailyValues.length-1]||0)+'</p></div>'
+      +'</div>'
+      +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px">'
+      +'<div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px"><p style="font-size:13px;font-weight:600;margin:0 0 12px;color:var(--text)">Análisis últimos 7 días</p><div style="position:relative;height:160px"><canvas id="chartDaily" role="img" aria-label="Análisis por día"></canvas></div></div>'
+      +'<div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px"><p style="font-size:13px;font-weight:600;margin:0 0 8px;color:var(--text)">Usuarios por plan</p>'
+      +'<div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:8px;font-size:11px;color:var(--text3)">'
+      +'<span style="display:flex;align-items:center;gap:4px"><span style="width:8px;height:8px;border-radius:2px;background:#888780;display:inline-block"></span>Free '+pctPlan(plans.free||0)+'%</span>'
+      +'<span style="display:flex;align-items:center;gap:4px"><span style="width:8px;height:8px;border-radius:2px;background:#534AB7;display:inline-block"></span>Pro '+pctPlan(plans.pro||0)+'%</span>'
+      +'<span style="display:flex;align-items:center;gap:4px"><span style="width:8px;height:8px;border-radius:2px;background:#BA7517;display:inline-block"></span>Business '+pctPlan(plans.business||0)+'%</span>'
+      +'<span style="display:flex;align-items:center;gap:4px"><span style="width:8px;height:8px;border-radius:2px;background:#1D9E75;display:inline-block"></span>Enterprise '+pctPlan(plans.enterprise||0)+'%</span>'
+      +'</div>'
+      +'<div style="position:relative;height:130px"><canvas id="chartPlans" role="img" aria-label="Usuarios por plan"></canvas></div></div>'
+      +'</div>'
+      +'<div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:16px"><p style="font-size:13px;font-weight:600;margin:0 0 12px;color:var(--text)">Uso por módulo</p>'
+      +(modKeys.length > 0 ? '<div style="position:relative;height:'+Math.max(180, modKeys.length*40)+'px"><canvas id="chartModules" role="img" aria-label="Uso por módulo"></canvas></div>' : '<p style="font-size:12px;color:var(--text3);text-align:center;padding:20px 0">Sin datos todavía — usa los módulos de la suite para ver estadísticas aquí</p>')
+      +'</div>'
+      +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">'
+      +'<div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px"><p style="font-size:13px;font-weight:600;margin:0 0 12px;color:var(--text)">Dispositivos</p>'
+      +'<div style="display:flex;flex-direction:column;gap:10px">'
+      +'<div><div style="display:flex;justify-content:space-between;font-size:12px;color:var(--text3);margin-bottom:4px"><span>Desktop</span><span>'+pctDev(devices.Desktop||0)+'%</span></div><div style="background:var(--surface2);border-radius:4px;height:6px;overflow:hidden"><div style="background:#534AB7;height:100%;width:'+pctDev(devices.Desktop||0)+'%"></div></div></div>'
+      +'<div><div style="display:flex;justify-content:space-between;font-size:12px;color:var(--text3);margin-bottom:4px"><span>Móvil</span><span>'+pctDev(devices['Móvil']||0)+'%</span></div><div style="background:var(--surface2);border-radius:4px;height:6px;overflow:hidden"><div style="background:#1D9E75;height:100%;width:'+pctDev(devices['Móvil']||0)+'%"></div></div></div>'
+      +'<div><div style="display:flex;justify-content:space-between;font-size:12px;color:var(--text3);margin-bottom:4px"><span>Tablet</span><span>'+pctDev(devices.Tablet||0)+'%</span></div><div style="background:var(--surface2);border-radius:4px;height:6px;overflow:hidden"><div style="background:#BA7517;height:100%;width:'+pctDev(devices.Tablet||0)+'%"></div></div></div>'
+      +'</div></div>'
+      +'<div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px"><p style="font-size:13px;font-weight:600;margin:0 0 12px;color:var(--text)">Top empresas por uso</p>'+topEmpHTML+'</div>'
+      +'</div>';
+
+    if (typeof Chart !== 'undefined') {
+      renderStatsCharts(dailyLabels, dailyValues, plans, totalCodes, modLabels, modValues, modColors);
+    } else {
+      const s = document.createElement('script');
+      s.src = 'https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js';
+      s.onload = () => renderStatsCharts(dailyLabels, dailyValues, plans, totalCodes, modLabels, modValues, modColors);
+      document.head.appendChild(s);
+    }
+
+  } catch(e) {
+    document.getElementById('dashboardWrap').innerHTML = '<div class="empty">Error cargando analytics: '+e.message+'</div>';
+  }
+}
+
+function renderStatsCharts(dailyLabels, dailyValues, plans, totalCodes, modLabels, modValues, modColors) {
+  const textColor = 'rgba(0,0,0,0.4)';
+  const gridColor = 'rgba(0,0,0,0.06)';
+  ['chartDaily','chartPlans','chartModules'].forEach(id => {
+    const c = Chart.getChart(id);
+    if (c) c.destroy();
+  });
+  const cDaily = document.getElementById('chartDaily');
+  if (cDaily) {
+    new Chart(cDaily, {
+      type: 'bar',
+      data: { labels: dailyLabels, datasets: [{ label: 'Análisis', data: dailyValues, backgroundColor: '#534AB7', borderRadius: 4 }] },
+      options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { ticks: { color: textColor, font: { size: 11 } }, grid: { display: false } }, y: { ticks: { color: textColor, font: { size: 11 } }, grid: { color: gridColor }, beginAtZero: true } } }
+    });
+  }
+  const cPlans = document.getElementById('chartPlans');
+  if (cPlans && totalCodes > 0) {
+    new Chart(cPlans, {
+      type: 'doughnut',
+      data: { labels: ['Free','Pro','Business','Enterprise'], datasets: [{ data: [plans.free||0, plans.pro||0, plans.business||0, plans.enterprise||0], backgroundColor: ['#888780','#534AB7','#BA7517','#1D9E75'], borderWidth: 0 }] },
+      options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, cutout: '65%' }
+    });
+  }
+  const cMod = document.getElementById('chartModules');
+  if (cMod && modValues.length > 0) {
+    new Chart(cMod, {
+      type: 'bar',
+      data: { labels: modLabels, datasets: [{ label: 'Análisis', data: modValues, backgroundColor: modColors, borderRadius: 4 }] },
+      options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { ticks: { color: textColor, font: { size: 11 } }, grid: { color: gridColor }, beginAtZero: true }, y: { ticks: { color: textColor, font: { size: 11 } }, grid: { display: false } } } }
+    });
+  }
 }
 </script>
 </body>
