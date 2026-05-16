@@ -447,13 +447,24 @@ function closeModal() {
   pendingDeleteIds = null;
 }
 
-function executeDelete() {
+async function executeDelete() {
   if (!pendingDeleteIds) return;
-  allEntries = allEntries.filter((_, i) => !pendingDeleteIds.has(i));
-  selectedIds.clear();
-  pendingDeleteIds = null;
+  const idsToDelete = Array.from(pendingDeleteIds);
   closeModal();
-  renderData(allEntries, false);
+  try {
+    const resp = await fetch('/api/delete-access', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({pwd: adminPwd, ids: idsToDelete})
+    });
+    const data = await resp.json();
+    if (!data.ok) throw new Error(data.error);
+    selectedIds.clear();
+    pendingDeleteIds = null;
+    loadData(false); // recarga desde Upstash para confirmar
+  } catch(e) {
+    alert('Error al borrar: ' + e.message);
+  }
 }
 
 document.getElementById('modalBg').addEventListener('click', function(e) {
