@@ -43,7 +43,7 @@ body{font-family:'Geist',sans-serif;background:var(--bg);color:var(--text);min-h
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
 .logout-btn{font-size:12px;background:rgba(255,255,255,.15);border:none;color:#fff;padding:5px 12px;border-radius:6px;cursor:pointer;font-family:inherit}
 
-.main{max-width:1000px;margin:0 auto;padding:28px 20px}
+.main{max-width:1100px;margin:0 auto;padding:28px 20px}
 
 .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:24px}
 @media(max-width:600px){.stats{grid-template-columns:1fr 1fr}}
@@ -119,11 +119,9 @@ input[type=checkbox]{width:15px;height:15px;accent-color:var(--brand);cursor:poi
 .modal-cancel{background:var(--surface);color:var(--text2)}
 
 .footer{text-align:center;margin-top:24px;font-size:12px;color:var(--text3)}
+
+/* SECCIÓN CÓDIGOS */
 .codes-section{margin-top:24px}
-.codes-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:10px}
-.codes-title{font-size:15px;font-weight:700;color:var(--text)}
-.btn-refresh-codes{display:inline-flex;align-items:center;gap:6px;padding:7px 14px;border-radius:8px;font-size:12px;font-weight:600;font-family:inherit;cursor:pointer;border:1px solid var(--border);background:var(--surface);color:var(--text2)}
-.btn-refresh-codes:hover{background:var(--surface2)}
 .codes-table-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;overflow:hidden}
 .code-badge{font-size:11px;font-weight:700;padding:3px 9px;border-radius:20px;font-family:'Geist Mono',monospace}
 .plan-free{background:#f0efe8;color:#666}
@@ -139,9 +137,21 @@ input[type=checkbox]{width:15px;height:15px;accent-color:var(--brand);cursor:poi
 .btn-action.reset:hover{background:#f0ddb0}
 .btn-action.toggle{background:var(--red-light);color:var(--red);border-color:rgba(163,45,45,.25)}
 .btn-action.toggle.deactivate{background:var(--green-light);color:var(--green);border-color:rgba(29,158,117,.25)}
+.btn-action.del{background:var(--red-light);color:var(--red);border-color:rgba(163,45,45,.25)}
+.btn-action.del:hover{background:#f5d5d5}
 .fp-badge{font-size:10px;font-weight:600;padding:2px 8px;border-radius:20px}
 .fp-yes{background:var(--green-light);color:var(--green)}
 .fp-no{background:#f0efe8;color:#999}
+
+/* CODES TOOLBAR */
+.codes-toolbar{display:flex;align-items:center;justify-content:space-between;padding:14px 20px;border-bottom:1px solid var(--border);flex-wrap:wrap;gap:10px}
+.codes-toolbar-left{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.codes-toolbar-right{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.codes-title{font-size:14px;font-weight:600}
+
+/* CODES SELECTION BAR */
+.codes-sel-bar{display:none;background:var(--red-light);border-bottom:1px solid rgba(163,45,45,.15);padding:8px 20px;font-size:13px;color:var(--red);font-weight:500;align-items:center;gap:12px}
+.codes-sel-bar.visible{display:flex}
 </style>
 </head>
 <body>
@@ -183,6 +193,7 @@ input[type=checkbox]{width:15px;height:15px;accent-color:var(--brand);cursor:poi
       <div class="stat"><div class="stat-val" id="statHoy">—</div><div class="stat-lbl">Accesos hoy</div></div>
     </div>
 
+    <!-- TABLA ACCESOS -->
     <div class="table-card">
       <div class="toolbar">
         <div class="toolbar-left">
@@ -207,29 +218,60 @@ input[type=checkbox]{width:15px;height:15px;accent-color:var(--brand);cursor:poi
       </div>
     </div>
 
+    <!-- SECCIÓN CÓDIGOS -->
     <div class="codes-section" id="codesSection" style="display:none">
-      <div class="codes-header">
-        <div class="codes-title">🔑 Gestión de códigos de acceso</div>
-        <button class="btn-refresh-codes" onclick="loadCodes()">↻ Actualizar</button>
-      </div>
       <div class="codes-table-card">
+
+        <!-- TOOLBAR CÓDIGOS -->
+        <div class="codes-toolbar">
+          <div class="codes-toolbar-left">
+            <div class="codes-title">🔑 Gestión de códigos de acceso</div>
+            <button class="btn-tool btn-select-all" id="btnSelectAllCodes" onclick="toggleSelectAllCodes()">☐ Seleccionar todo</button>
+          </div>
+          <div class="codes-toolbar-right">
+            <button class="btn-tool btn-export" onclick="exportCodesCSV()">⬇ Exportar CSV</button>
+            <button class="btn-tool btn-delete" id="btnDeleteCodes" onclick="confirmDeleteCodes()" disabled>🗑 Borrar seleccionados</button>
+            <button class="btn-tool" onclick="loadCodes()">↻ Actualizar</button>
+          </div>
+        </div>
+
+        <!-- BARRA SELECCIÓN CÓDIGOS -->
+        <div class="codes-sel-bar" id="codesSelBar">
+          <span id="codesSelCount">0 códigos seleccionados</span>
+          <button class="btn-tool btn-delete" style="padding:4px 12px;font-size:11px" onclick="confirmDeleteCodes()">🗑 Borrar seleccionados</button>
+          <button class="btn-tool" style="padding:4px 12px;font-size:11px" onclick="clearCodeSelection()">✕ Cancelar</button>
+        </div>
+
         <div id="codesWrap">
           <div class="loading"><div class="dots"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div></div>
         </div>
       </div>
     </div>
+
     <div class="footer">Menarguez-IA Solutions · app.menarguez-ia.com · Panel de administración</div>
   </div>
 </div>
 
-<!-- MODAL CONFIRMACIÓN -->
+<!-- MODAL ACCESOS -->
 <div class="modal-bg" id="modalBg">
   <div class="modal">
     <h3>⚠ Confirmar borrado</h3>
-    <p id="modalMsg">¿Seguro que quieres borrar los registros seleccionados? Esta acción no se puede deshacer.</p>
+    <p id="modalMsg">¿Seguro que quieres borrar los registros seleccionados?</p>
     <div class="modal-btns">
       <button class="modal-cancel" onclick="closeModal()">Cancelar</button>
       <button class="modal-confirm" onclick="executeDelete()">Sí, borrar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL CÓDIGOS -->
+<div class="modal-bg" id="modalCodesBg">
+  <div class="modal">
+    <h3>⚠ Confirmar borrado de códigos</h3>
+    <p id="modalCodesMsg">¿Seguro que quieres borrar los códigos seleccionados? Esta acción no se puede deshacer.</p>
+    <div class="modal-btns">
+      <button class="modal-cancel" onclick="closeCodesModal()">Cancelar</button>
+      <button class="modal-confirm" onclick="executeDeleteCodes()">Sí, borrar</button>
     </div>
   </div>
 </div>
@@ -240,6 +282,10 @@ let refreshInterval = null;
 let lastCount = 0;
 let allEntries = [];
 let selectedIds = new Set();
+
+// ── ESTADO CÓDIGOS ────────────────────────────────────────────
+let allCodes = [];
+let selectedCodes = new Set();
 
 function doLogin() {
   const pwd = document.getElementById('pwdInput').value.trim();
@@ -256,6 +302,7 @@ function logout() {
   document.getElementById('loginWrap').style.display = 'flex';
   document.getElementById('pwdInput').value = '';
   selectedIds.clear();
+  selectedCodes.clear();
 }
 
 async function loadData(isLogin) {
@@ -274,7 +321,7 @@ async function loadData(isLogin) {
       document.getElementById('adminPanel').style.display = 'block';
       refreshInterval = setInterval(() => {
         loadData(false);
-        loadCodes(); // auto-refresh códigos cada 30 segundos
+        loadCodes();
       }, 30000);
       document.getElementById('codesSection').style.display = 'block';
       loadCodes();
@@ -309,7 +356,7 @@ function renderData(entries, isLogin) {
   lastCount = entries.length;
 
   if (!entries.length) {
-    document.getElementById('tableWrap').innerHTML = '<div class="empty">No hay accesos registrados todavía.<br>Aparecerán aquí cuando alguien haga login en la suite.</div>';
+    document.getElementById('tableWrap').innerHTML = '<div class="empty">No hay accesos registrados todavía.</div>';
     return;
   }
 
@@ -330,30 +377,21 @@ function renderData(entries, isLogin) {
 
   document.getElementById('tableWrap').innerHTML = `
     <table>
-      <thead>
-        <tr>
-          <th></th>
-          <th>📅 Fecha</th>
-          <th>🕐 Hora</th>
-          <th>👤 Nombre</th>
-          <th>🏢 Empresa</th>
-          <th>📱 Dispositivo</th>
-        </tr>
-      </thead>
+      <thead><tr>
+        <th></th>
+        <th>📅 Fecha</th><th>🕐 Hora</th>
+        <th>👤 Nombre</th><th>🏢 Empresa</th><th>📱 Dispositivo</th>
+      </tr></thead>
       <tbody>${rows}</tbody>
     </table>`;
 
   updateSelectionUI();
 }
 
-// SELECCIÓN
+// ── SELECCIÓN ACCESOS ─────────────────────────────────────────
 function toggleRow(idx, checked) {
-  if (checked) {
-    selectedIds.add(idx);
-  } else {
-    selectedIds.delete(idx);
-  }
-  const row = document.querySelector(`tr[data-idx="${idx}"]`);
+  if (checked) selectedIds.add(idx); else selectedIds.delete(idx);
+  const row = document.querySelector('tr[data-idx="' + idx + '"]');
   if (row) row.classList.toggle('selected', checked);
   updateSelectionUI();
 }
@@ -361,9 +399,7 @@ function toggleRow(idx, checked) {
 function toggleSelectAll() {
   const allSelected = selectedIds.size === allEntries.length;
   selectedIds.clear();
-  if (!allSelected) {
-    allEntries.forEach((_, i) => selectedIds.add(i));
-  }
+  if (!allSelected) allEntries.forEach((_, i) => selectedIds.add(i));
   renderData(allEntries, false);
 }
 
@@ -374,42 +410,35 @@ function clearSelection() {
 
 function updateSelectionUI() {
   const count = selectedIds.size;
-  const btnDelete = document.getElementById('btnDelete');
-  const selBar = document.getElementById('selectionBar');
-  const selCount = document.getElementById('selectionCount');
-  const btnSelectAll = document.getElementById('btnSelectAll');
-
-  btnDelete.disabled = count === 0;
-  selBar.classList.toggle('visible', count > 0);
-  selCount.textContent = count + (count === 1 ? ' fila seleccionada' : ' filas seleccionadas');
-  btnSelectAll.textContent = (count === allEntries.length && count > 0) ? '☑ Deseleccionar todo' : '☐ Seleccionar todo';
+  document.getElementById('btnDelete').disabled = count === 0;
+  document.getElementById('selectionBar').classList.toggle('visible', count > 0);
+  document.getElementById('selectionCount').textContent = count + (count === 1 ? ' fila seleccionada' : ' filas seleccionadas');
+  document.getElementById('btnSelectAll').textContent = (count === allEntries.length && count > 0) ? '☑ Deseleccionar todo' : '☐ Seleccionar todo';
 }
 
-// EXPORTAR CSV
+// ── EXPORTAR CSV ACCESOS ──────────────────────────────────────
 function exportCSV() {
   if (!allEntries.length) return;
-
   const headers = ['Fecha', 'Hora', 'Nombre', 'Empresa', 'Dispositivo'];
   const rows = allEntries.map(e =>
-    [e.fecha, e.hora, `"${e.nombre}"`, `"${e.empresa}"`, e.dispositivo].join(',')
+    [e.fecha, e.hora, '"' + e.nombre + '"', '"' + e.empresa + '"', e.dispositivo].join(',')
   );
-
   const csv = [headers.join(','), ...rows].join('\n');
-  const blob = new Blob(['\uFEFF' + csv], {type: 'text/csv;charset=utf-8'});
+  const blob = new Blob(['\uFEFF' + csv], {type:'text/csv;charset=utf-8'});
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
   a.download = 'accesos_menarguez_ia_' + new Date().toISOString().slice(0,10) + '.csv';
   a.click();
 }
 
-// BORRADO
+// ── BORRADO ACCESOS ───────────────────────────────────────────
 let pendingDeleteIds = null;
 
 function confirmDelete() {
   if (selectedIds.size === 0) return;
   pendingDeleteIds = new Set(selectedIds);
   document.getElementById('modalMsg').textContent =
-    `¿Seguro que quieres borrar ${pendingDeleteIds.size} ${pendingDeleteIds.size === 1 ? 'registro' : 'registros'}? Esta acción no se puede deshacer.`;
+    '¿Seguro que quieres borrar ' + pendingDeleteIds.size + ' ' + (pendingDeleteIds.size === 1 ? 'registro' : 'registros') + '? Esta acción no se puede deshacer.';
   document.getElementById('modalBg').classList.add('open');
 }
 
@@ -420,17 +449,11 @@ function closeModal() {
 
 function executeDelete() {
   if (!pendingDeleteIds) return;
-
-  // Filtrar localmente los no seleccionados
-  const newEntries = allEntries.filter((_, i) => !pendingDeleteIds.has(i));
-  allEntries = newEntries;
+  allEntries = allEntries.filter((_, i) => !pendingDeleteIds.has(i));
   selectedIds.clear();
   pendingDeleteIds = null;
   closeModal();
   renderData(allEntries, false);
-
-  // Nota: el borrado es local (no persiste en Upstash)
-  // Para borrado real en Upstash habría que añadir un endpoint /api/delete-access
 }
 
 document.getElementById('modalBg').addEventListener('click', function(e) {
@@ -446,55 +469,184 @@ async function loadCodes() {
     const data = await resp.json();
     if (!data.ok) throw new Error(data.error);
     if (!data.codes.length) {
-      wrap.innerHTML = '<div class="empty">No hay c&oacute;digos registrados. Cr&eacute;alos desde Upstash CLI';
+      wrap.innerHTML = '<div class="empty">No hay códigos registrados.</div>';
       return;
     }
-    const rows = data.codes.map(function(c) {
-      var planClass = 'plan-' + (c.plan || 'free');
-      var planLabel = (c.plan || 'free').toUpperCase();
-      var activoDot = c.activo ? 'status-active' : 'status-inactive';
-      var activoLabel = c.activo ? 'Activo' : 'Inactivo';
-      var toggleLabel = c.activo ? 'Desactivar' : 'Activar';
-      var toggleClass = c.activo ? 'btn-action toggle' : 'btn-action toggle deactivate';
-      var fpLabel = c.vinculado ? '&#x2705; Vinculado' : '&#x274C; Sin vincular';
-      var fpClass = c.vinculado ? 'fp-yes' : 'fp-no';
-      var dispositivoInfo = '';
-      if (c.vinculado && c.dispositivo) {
-        dispositivoInfo = '<div style="font-size:10px;color:var(--text3);margin-top:3px">'
-          + c.dispositivo.os + ' &middot; ' + c.dispositivo.browser + '</div>'
-          + '<div style="font-size:10px;color:var(--text3)">IP: ' + c.dispositivo.ip + '</div>'
-          + '<div style="font-size:10px;color:var(--text3)">' + (c.dispositivo.fecha||'') + ' ' + (c.dispositivo.hora||'') + '</div>';
-      }
-      var usosLabel = c.usos_max > 0 ? c.usos_usados + ' / ' + c.usos_max : '&#x221E; Sin l&iacute;mite';
-      var resetBtn = c.vinculado
-        ? '<button class="btn-action reset" data-code="'+c.code+'" data-action="reset" onclick="resetFingerprint(this.dataset.code)">&#x21BA; Resetear</button>'
-        : '';
-      var toggleBtn = '<button class="'+toggleClass+'" data-code="'+c.code+'" data-active="'+c.activo+'" onclick="handleToggle(this)">'+toggleLabel+'</button>';
-      return '<tr>'
-        + '<td style="font-family:monospace;font-size:12px;font-weight:700;color:var(--brand)">'+c.code+'</td>'
-        + '<td class="td-nombre">'+c.nombre+'</td>'
-        + '<td class="td-empresa">'+c.empresa+'</td>'
-        + '<td><span class="code-badge '+planClass+'">'+planLabel+'</span></td>'
-        + '<td style="font-size:12px;color:var(--text2)">'+usosLabel+'</td>'
-        + '<td style="font-size:12px;color:var(--text3)">'+(c.expira||'&mdash;')+'</td>'
-        + '<td><span class="status-dot '+activoDot+'"></span>'+activoLabel+'</td>'
-        + '<td><span class="fp-badge '+fpClass+'">'+fpLabel+'</span>'+dispositivoInfo+'</td>'
-        + '<td>'+resetBtn+' '+toggleBtn+'</td>'
-        + '</tr>';
-    }).join('');
-    wrap.innerHTML = `<table>
-      <thead><tr>
-        <th>🔑 Código</th><th>👤 Usuario</th><th>🏢 Empresa</th>
-        <th>💳 Plan</th><th>📊 Usos</th><th>📅 Expira</th>
-        <th>Estado</th><th>📱 Dispositivo</th><th>Acciones</th>
-      </tr></thead>
-      <tbody>${rows}</tbody>
-    </table>`;
+
+    // ── ORDENAR: vinculados primero (por fecha más reciente), luego sin vincular
+    allCodes = data.codes.sort(function(a, b) {
+      const aFecha = a.dispositivo && a.dispositivo.fecha ? a.dispositivo.fecha : '';
+      const bFecha = b.dispositivo && b.dispositivo.fecha ? b.dispositivo.fecha : '';
+      if (aFecha && !bFecha) return -1;
+      if (!aFecha && bFecha) return 1;
+      return bFecha.localeCompare(aFecha);
+    });
+
+    renderCodes();
+
   } catch(e) {
     wrap.innerHTML = '<div class="empty">Error: ' + e.message + '</div>';
   }
 }
 
+function renderCodes() {
+  const wrap = document.getElementById('codesWrap');
+
+  const rows = allCodes.map(function(c) {
+    var planClass = 'plan-' + (c.plan || 'free');
+    var planLabel = (c.plan || 'free').toUpperCase();
+    var activoDot = c.activo ? 'status-active' : 'status-inactive';
+    var activoLabel = c.activo ? 'Activo' : 'Inactivo';
+    var toggleLabel = c.activo ? 'Desactivar' : 'Activar';
+    var toggleClass = c.activo ? 'btn-action toggle' : 'btn-action toggle deactivate';
+    var fpLabel = c.vinculado ? '&#x2705; Vinculado' : '&#x274C; Sin vincular';
+    var fpClass = c.vinculado ? 'fp-yes' : 'fp-no';
+    var dispositivoInfo = '';
+    if (c.vinculado && c.dispositivo) {
+      dispositivoInfo = '<div style="font-size:10px;color:var(--text3);margin-top:3px">'
+        + c.dispositivo.os + ' &middot; ' + c.dispositivo.browser + '</div>'
+        + '<div style="font-size:10px;color:var(--text3)">IP: ' + c.dispositivo.ip + '</div>'
+        + '<div style="font-size:10px;color:var(--text3)">' + (c.dispositivo.fecha||'') + ' ' + (c.dispositivo.hora||'') + '</div>';
+    }
+    var usosLabel = c.usos_max > 0 ? c.usos_usados + ' / ' + c.usos_max : '&#x221E; Sin límite';
+    var resetBtn = c.vinculado
+      ? '<button class="btn-action reset" data-code="'+c.code+'" onclick="resetFingerprint(this.dataset.code)">&#x21BA; Resetear</button>'
+      : '';
+    var toggleBtn = '<button class="'+toggleClass+'" data-code="'+c.code+'" data-active="'+c.activo+'" onclick="handleToggle(this)">'+toggleLabel+'</button>';
+    var delBtn = '<button class="btn-action del" data-code="'+c.code+'" onclick="confirmDeleteSingleCode(this.dataset.code)">🗑</button>';
+    var checked = selectedCodes.has(c.code) ? 'checked' : '';
+    var selClass = selectedCodes.has(c.code) ? 'selected' : '';
+
+    return '<tr class="'+selClass+'" data-code="'+c.code+'">'
+      + '<td><input type="checkbox" '+checked+' onchange="toggleCodeRow(\''+c.code+'\', this.checked)"></td>'
+      + '<td style="font-family:monospace;font-size:12px;font-weight:700;color:var(--brand)">'+c.code+'</td>'
+      + '<td class="td-nombre">'+c.nombre+'</td>'
+      + '<td class="td-empresa">'+c.empresa+'</td>'
+      + '<td><span class="code-badge '+planClass+'">'+planLabel+'</span></td>'
+      + '<td style="font-size:12px;color:var(--text2)">'+usosLabel+'</td>'
+      + '<td style="font-size:12px;color:var(--text3)">'+(c.expira||'&mdash;')+'</td>'
+      + '<td><span class="status-dot '+activoDot+'"></span>'+activoLabel+'</td>'
+      + '<td><span class="fp-badge '+fpClass+'">'+fpLabel+'</span>'+dispositivoInfo+'</td>'
+      + '<td>'+resetBtn+' '+toggleBtn+' '+delBtn+'</td>'
+      + '</tr>';
+  }).join('');
+
+  wrap.innerHTML = '<table>'
+    + '<thead><tr>'
+    + '<th></th>'
+    + '<th>🔑 Código</th><th>👤 Usuario</th><th>🏢 Empresa</th>'
+    + '<th>💳 Plan</th><th>📊 Usos</th><th>📅 Expira</th>'
+    + '<th>Estado</th><th>📱 Dispositivo</th><th>Acciones</th>'
+    + '</tr></thead>'
+    + '<tbody>'+rows+'</tbody>'
+    + '</table>';
+
+  updateCodesSelectionUI();
+}
+
+// ── SELECCIÓN CÓDIGOS ─────────────────────────────────────────
+function toggleCodeRow(code, checked) {
+  if (checked) selectedCodes.add(code); else selectedCodes.delete(code);
+  const row = document.querySelector('tr[data-code="' + code + '"]');
+  if (row) row.classList.toggle('selected', checked);
+  updateCodesSelectionUI();
+}
+
+function toggleSelectAllCodes() {
+  const allSelected = selectedCodes.size === allCodes.length;
+  selectedCodes.clear();
+  if (!allSelected) allCodes.forEach(c => selectedCodes.add(c.code));
+  renderCodes();
+}
+
+function clearCodeSelection() {
+  selectedCodes.clear();
+  renderCodes();
+}
+
+function updateCodesSelectionUI() {
+  const count = selectedCodes.size;
+  document.getElementById('btnDeleteCodes').disabled = count === 0;
+  document.getElementById('codesSelBar').classList.toggle('visible', count > 0);
+  document.getElementById('codesSelCount').textContent = count + (count === 1 ? ' código seleccionado' : ' códigos seleccionados');
+  document.getElementById('btnSelectAllCodes').textContent = (count === allCodes.length && count > 0) ? '☑ Deseleccionar todo' : '☐ Seleccionar todo';
+}
+
+// ── EXPORTAR CSV CÓDIGOS ──────────────────────────────────────
+function exportCodesCSV() {
+  if (!allCodes.length) return;
+  const headers = ['Código', 'Nombre', 'Empresa', 'Plan', 'Usos usados', 'Usos máx', 'Expira', 'Activo', 'Vinculado', 'OS', 'Browser', 'IP', 'Fecha acceso'];
+  const rows = allCodes.map(c => [
+    c.code,
+    '"' + (c.nombre||'') + '"',
+    '"' + (c.empresa||'') + '"',
+    c.plan||'free',
+    c.usos_usados||0,
+    c.usos_max||0,
+    c.expira||'',
+    c.activo ? 'Sí' : 'No',
+    c.vinculado ? 'Sí' : 'No',
+    c.dispositivo ? '"' + (c.dispositivo.os||'') + '"' : '',
+    c.dispositivo ? '"' + (c.dispositivo.browser||'') + '"' : '',
+    c.dispositivo ? (c.dispositivo.ip||'') : '',
+    c.dispositivo ? (c.dispositivo.fecha||'') + ' ' + (c.dispositivo.hora||'') : ''
+  ].join(','));
+  const csv = [headers.join(','), ...rows].join('\n');
+  const blob = new Blob(['\uFEFF' + csv], {type:'text/csv;charset=utf-8'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'codigos_menarguez_ia_' + new Date().toISOString().slice(0,10) + '.csv';
+  a.click();
+}
+
+// ── BORRADO CÓDIGOS ───────────────────────────────────────────
+let pendingDeleteCodes = null;
+
+function confirmDeleteCodes() {
+  if (selectedCodes.size === 0) return;
+  pendingDeleteCodes = new Set(selectedCodes);
+  document.getElementById('modalCodesMsg').textContent =
+    '¿Seguro que quieres borrar ' + pendingDeleteCodes.size + ' ' + (pendingDeleteCodes.size === 1 ? 'código' : 'códigos') + '? Esta acción no se puede deshacer.';
+  document.getElementById('modalCodesBg').classList.add('open');
+}
+
+function confirmDeleteSingleCode(code) {
+  pendingDeleteCodes = new Set([code]);
+  document.getElementById('modalCodesMsg').textContent =
+    '¿Seguro que quieres borrar el código ' + code + '? Esta acción no se puede deshacer.';
+  document.getElementById('modalCodesBg').classList.add('open');
+}
+
+function closeCodesModal() {
+  document.getElementById('modalCodesBg').classList.remove('open');
+  pendingDeleteCodes = null;
+}
+
+async function executeDeleteCodes() {
+  if (!pendingDeleteCodes || pendingDeleteCodes.size === 0) return;
+  const codesToDelete = Array.from(pendingDeleteCodes);
+  closeCodesModal();
+  try {
+    const resp = await fetch('/api/delete-code', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({pwd: adminPwd, codes: codesToDelete})
+    });
+    const data = await resp.json();
+    if (!data.ok) throw new Error(data.error);
+    selectedCodes.clear();
+    pendingDeleteCodes = null;
+    loadCodes();
+  } catch(e) {
+    alert('Error al borrar: ' + e.message);
+  }
+}
+
+document.getElementById('modalCodesBg').addEventListener('click', function(e) {
+  if (e.target === this) closeCodesModal();
+});
+
+// ── ACCIONES CÓDIGOS ──────────────────────────────────────────
 async function resetFingerprint(code) {
   if (!confirm('¿Resetear dispositivo vinculado al código ' + code + '?')) return;
   try {
@@ -505,7 +657,6 @@ async function resetFingerprint(code) {
     });
     const data = await resp.json();
     if (!data.ok) throw new Error(data.error);
-    alert('✅ Dispositivo reseteado correctamente.');
     loadCodes();
   } catch(e) { alert('Error: ' + e.message); }
 }
