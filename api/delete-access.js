@@ -1,5 +1,5 @@
 // ════════════════════════════════════════════════════════════════
-// api/delete-access.js — Menarguez-IA Solutions
+// api/delete-access.js v2 — Menarguez-IA Solutions
 // ════════════════════════════════════════════════════════════════
 // FUNCIÓN: Borra entradas específicas de la lista 'accesos' en Upstash
 // ESTRATEGIA: Lee toda la lista → filtra los índices a borrar →
@@ -16,16 +16,15 @@ export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
   try {
-    const { pwd, ids } = req.body;
+    const { pwd, listIdxs } = req.body;
 
     // ── AUTENTICACIÓN ─────────────────────────────────────────
     if (!pwd || pwd !== process.env.ADMIN_PASSWORD) {
       return res.status(401).json({ ok: false, error: 'No autorizado' });
     }
 
-    // ── VALIDAR IDS ───────────────────────────────────────────
-    if (!ids || !Array.isArray(ids) || ids.length === 0) {
-      return res.status(400).json({ ok: false, error: 'No se especificaron IDs' });
+    if (!listIdxs || !Array.isArray(listIdxs) || listIdxs.length === 0) {
+      return res.status(400).json({ ok: false, error: 'No se especificaron índices' });
     }
 
     const KV_URL   = process.env.KV_REST_API_URL;
@@ -40,10 +39,8 @@ export default async function handler(req, res) {
       'Content-Type': 'application/json'
     };
 
-    // ── LEER TODA LA LISTA DE ACCESOS ─────────────────────────
-    const rangeResp = await fetch(`${KV_URL}/lrange/accesos/0/-1`, {
-      headers
-    });
+    // ── LEER LISTA COMPLETA ───────────────────────────────────
+    const rangeResp = await fetch(`${KV_URL}/lrange/accesos/0/-1`, { headers });
     const rangeData = await rangeResp.json();
     const rawList = rangeData.result || [];
 
@@ -51,31 +48,22 @@ export default async function handler(req, res) {
       return res.status(200).json({ ok: true, deleted: 0 });
     }
 
-    // ── PARSEAR ENTRADAS ──────────────────────────────────────
-    const parsed = rawList.map((item, idx) => {
-      let obj = item;
-      if (typeof obj === 'string') { try { obj = JSON.parse(obj); } catch(e) {} }
-      if (typeof obj === 'string') { try { obj = JSON.parse(obj); } catch(e) {} }
-      return { idx, raw: item, obj: (obj && typeof obj === 'object') ? obj : null };
-    });
+    // ── FILTRAR: quedan los que NO están en listIdxs ──────────
+    const idxSet = new Set(listIdxs.map(Number));
+    const toKeep = rawList.filter((_, idx) => !idxSet.has(idx));
 
-    // ── FILTRAR: quedan los que NO están en ids ───────────────
-    const idsSet = new Set(ids.map(Number));
-    const toKeep = parsed.filter(entry => !idsSet.has(entry.idx));
-
-    // ── BORRAR LA LISTA ENTERA ────────────────────────────────
+    // ── BORRAR LISTA ENTERA ───────────────────────────────────
     await fetch(`${KV_URL}/del/accesos`, { method: 'GET', headers });
 
-    // ── REESCRIBIR LOS QUE QUEDAN (en orden inverso para LPUSH)
-    // LPUSH añade al principio, así que empujamos en orden inverso
-    // para que queden en el mismo orden original
+    // ── REESCRIBIR LOS QUE QUEDAN ─────────────────────────────
     if (toKeep.length > 0) {
-      const itemsToWrite = toKeep.map(e => e.raw).reverse();
-      for (const item of itemsToWrite) {
+      const reversed = [...toKeep].reverse();
+      for (const item of reversed) {
+        const value = typeof item === 'string' ? item : JSON.stringify(item);
         await fetch(`${KV_URL}/lpush/accesos`, {
           method: 'POST',
           headers,
-          body: JSON.stringify(typeof item === 'string' ? item : JSON.stringify(item))
+          body: JSON.stringify(value)
         });
       }
     }
