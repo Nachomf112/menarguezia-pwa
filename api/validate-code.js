@@ -103,6 +103,9 @@ export default async function handler(req, res) {
     }
 
     // ── VALIDACIÓN 1: ACTIVO ──────────────────────────────────
+    console.log('codeData keys:', Object.keys(codeData || {}));
+    console.log('codeData.activo:', codeData && codeData.activo);
+    console.log('codeData.nombre:', codeData && codeData.nombre);
     if (!codeData.activo) {
       return res.status(200).json({
         valid: false,
