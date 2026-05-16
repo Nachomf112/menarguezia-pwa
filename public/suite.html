@@ -1553,13 +1553,13 @@ function loadDetector(){
 // ── HELPER FETCH ANALYZE ─────────────────────────────────────
 // Centraliza todas las llamadas a /api/analyze añadiendo el código
 // del usuario para que analyze.js pueda incrementar usos_usados en Upstash.
-function analyzeBody(body) {
- if (currentUser && currentUser.code) {
-  body.userCode = currentUser.code;
- }
- return JSON.stringify(body);
+function analyzeBody(body, module) {
+  if (currentUser && currentUser.code) {
+    body.userCode = currentUser.code;
+  }
+  if (module) body.module = module;
+  return JSON.stringify(body);
 }
-
 async function runDetector(){
  const txt = $('detectorText').value.trim();
  if(!txt){alert('Introduce un texto');return;}
