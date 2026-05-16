@@ -79,6 +79,11 @@ export default async function handler(req, res) {
     const upstashResp = await fetch(`${url}/get/code:${cleanCode}`, { headers });
     const upstashData = await upstashResp.json();
 
+    // LOG TEMPORAL: ver exactamente qué devuelve Upstash
+    console.log('UPSTASH RESULT TYPE:', typeof upstashData.result);
+    console.log('UPSTASH RESULT:', JSON.stringify(upstashData.result).substring(0, 200));
+    console.log('UPSTASH FULL:', JSON.stringify(upstashData).substring(0, 300));
+
     if (!upstashData.result) {
       return res.status(200).json({ valid: false, error: 'Código no encontrado' });
     }
