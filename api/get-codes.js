@@ -138,14 +138,13 @@ export default async function handler(req, res) {
 
         try {
           // Parseo robusto — soporta múltiples niveles de anidamiento
+          // Mismo parseo universal que validate-code.js
           let raw = getData.result;
-          console.log('get-codes RAW type:', typeof raw, 'isArray:', Array.isArray(raw));
-          console.log('get-codes RAW:', JSON.stringify(raw).substring(0, 150));
           if (Array.isArray(raw)) raw = raw[0];
-          if (typeof raw === 'string') { try { raw = JSON.parse(raw); } catch(e) { console.error('parse1 error:', e.message); } }
-          if (typeof raw === 'string') { try { raw = JSON.parse(raw); } catch(e) { console.error('parse2 error:', e.message); } }
-          console.log('get-codes PARSED nombre:', raw && raw.nombre, 'plan:', raw && raw.plan);
-          const data = raw;
+          if (typeof raw === 'string') { try { raw = JSON.parse(raw); } catch(e) {} }
+          if (typeof raw === 'string') { try { raw = JSON.parse(raw); } catch(e) {} }
+          const data = (raw && typeof raw === 'object') ? raw : null;
+          if (!data) return null;
 
           return {
             code: codeKey,
