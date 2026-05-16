@@ -169,7 +169,9 @@ export default async function handler(req, res) {
         await fetch(`${url}/set/code:${cleanCode}`, {
           method: 'POST',
           headers,
-          body: JSON.stringify([JSON.stringify(codeData)])
+          // Guardamos como objeto nativo (igual que CLI sin comillas)
+          // NO usar JSON.stringify(codeData) porque crea formato string que rompe el parseo
+          body: JSON.stringify(codeData)
         });
 
       } else if (codeData.fingerprint !== fingerprint) {
