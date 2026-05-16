@@ -1,4 +1,7 @@
-// api/get-access.js v3
+// api/get-access.js v4
+// ── CAMBIO v4: añade _id único a cada entrada (fecha+hora+nombre hash)
+//    para que delete-access.js pueda borrar por ID fiable
+
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   if (req.method !== 'GET') return res.status(405).end();
@@ -24,15 +27,20 @@ export default async function handler(req, res) {
     const data = await resp.json();
 
     if (!data.result) {
-      return res.status(200).json({ ok: true, entries: [], total: 0, raw: data });
+      return res.status(200).json({ ok: true, entries: [], total: 0 });
     }
 
-    const entries = data.result.map(item => {
+    const entries = data.result.map((item, listIdx) => {
       try {
         const parsed = typeof item === 'string' ? JSON.parse(item) : item;
         const obj = Array.isArray(parsed) ? JSON.parse(parsed[0]) : parsed;
         if (!obj || !obj.nombre) return null;
-        return obj;
+
+        // ── Generar _id único: combinación de campos + posición en lista
+        // listIdx es la posición real en Upstash (0 = más reciente)
+        const _id = [obj.fecha || '', obj.hora || '', obj.nombre || '', listIdx].join('|');
+
+        return { ...obj, _id, _listIdx: listIdx };
       } catch {
         return null;
       }
