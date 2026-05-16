@@ -169,7 +169,7 @@ export default async function handler(req, res) {
           await fetch(`${kvUrl}/set/code:${userCode}`, {
             method: 'POST',
             headers: kvHeaders,
-            body: JSON.stringify([JSON.stringify(codeData)])
+            body: JSON.stringify(codeData)
           });
           data._usage.usos_usados = codeData.usos_usados;
           data._usage.usos_max = codeData.usos_max || 0;
