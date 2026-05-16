@@ -449,13 +449,14 @@ function closeModal() {
 
 async function executeDelete() {
   if (!pendingDeleteIds) return;
-  const idsToDelete = Array.from(pendingDeleteIds);
+  // Recoger los _listIdx reales de Upstash de las entradas seleccionadas
+  const listIdxsToDelete = Array.from(pendingDeleteIds).map(i => allEntries[i]._listIdx);
   closeModal();
   try {
     const resp = await fetch('/api/delete-access', {
       method: 'POST',
       headers: {'Content-Type':'application/json'},
-      body: JSON.stringify({pwd: adminPwd, ids: idsToDelete})
+      body: JSON.stringify({pwd: adminPwd, listIdxs: listIdxsToDelete})
     });
     const data = await resp.json();
     if (!data.ok) throw new Error(data.error);
