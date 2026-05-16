@@ -46,13 +46,28 @@ function calcularExpiracion(plan) {
 
 // ── EXTRAER CAMPO POR LABEL ───────────────────────────────────
 // Busca en el array fields[] el campo con el label indicado
+// FIX v2: MULTIPLE_CHOICE manda IDs en value[], no objetos con .text
+// Hay que cruzar con campo.options para obtener el texto real
 function extraerCampo(fields, label) {
   const campo = fields.find(f => f.label === label);
   if (!campo) return '';
-  // Si es MULTIPLE_CHOICE, el valor está en value[0].text
+
   if (campo.type === 'MULTIPLE_CHOICE' && Array.isArray(campo.value)) {
-    return campo.value[0]?.text || '';
+    // campo.value contiene IDs (strings), no objetos
+    // Cruzamos con campo.options para obtener el texto legible
+    const seleccionadoId = campo.value[0];
+    if (!seleccionadoId) return '';
+
+    if (Array.isArray(campo.options)) {
+      const opcion = campo.options.find(o => o.id === seleccionadoId);
+      if (opcion?.text) return opcion.text;
+    }
+
+    // Fallback: si no hay options o no matchea, devolver el ID tal cual
+    // (mejor que vacío para debug)
+    return seleccionadoId;
   }
+
   return campo.value || '';
 }
 
