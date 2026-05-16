@@ -85,15 +85,19 @@ export default async function handler(req, res) {
 
     let codeData;
     try {
-      // Parseo flexible con log para debug
+      // Parseo universal — maneja todos los formatos posibles de Upstash:
+      // 1. Objeto nativo:  { nombre: "Nacho", ... }          → guardado sin comillas desde CLI
+      // 2. String JSON:    '{"nombre":"Nacho",...}'           → guardado con JSON.stringify
+      // 3. Array de str:   ['{"nombre":"Nacho",...}']         → guardado con [JSON.stringify()]
       let raw = upstashData.result;
-      console.log('Upstash raw type:', typeof raw, 'isArray:', Array.isArray(raw));
-      console.log('Upstash raw value:', JSON.stringify(raw).substring(0, 200));
       if (Array.isArray(raw)) raw = raw[0];
-      if (typeof raw === 'string') { try { raw = JSON.parse(raw); } catch(e) { console.error('Parse error 1:', e.message); } }
-      if (typeof raw === 'string') { try { raw = JSON.parse(raw); } catch(e) { console.error('Parse error 2:', e.message); } }
-      console.log('Parsed activo:', raw && raw.activo);
-      codeData = raw;
+      if (typeof raw === 'string') { try { raw = JSON.parse(raw); } catch(e) {} }
+      if (typeof raw === 'string') { try { raw = JSON.parse(raw); } catch(e) {} }
+      // Si raw es objeto plano de Upstash (tipo "[object Object]"), ya está listo
+      codeData = (raw && typeof raw === 'object') ? raw : null;
+      if (!codeData) {
+        return res.status(200).json({ valid: false, error: 'Error al leer el código' });
+      }
     } catch (e) {
       return res.status(200).json({ valid: false, error: 'Error al leer el código' });
     }
