@@ -1824,7 +1824,7 @@ function loadReputation(){
  toast('Ejemplo cargado');
 }
 
-async function runReputation(){
+async function runReputation(){if(!checkUsos()) return;
  const txt = $('reputationText').value.trim();
  if(!txt){alert('Introduce comentario');return;}
  consume();
