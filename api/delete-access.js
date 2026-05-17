@@ -64,7 +64,15 @@ export default async function handler(req, res) {
     }
 
     const deleted = rawList.length - toKeep.length;
-    return res.status(200).json({ ok: true, deleted, remaining: toKeep.length });
+    const debugInfo = rawList.slice(0,5).map((item, idx) => {
+  try {
+    let parsed = typeof item === 'string' ? JSON.parse(item) : item;
+    let obj = Array.isArray(parsed) ? JSON.parse(parsed[0]) : parsed;
+    if (typeof obj === 'string') obj = JSON.parse(obj);
+    return { idx, id: obj.id, nombre: obj.nombre };
+  } catch(e) { return { idx, error: e.message }; }
+});
+return res.status(200).json({ ok: true, deleted, remaining: toKeep.length, debug: { entryIds, debugInfo } });
 
   } catch (err) {
     console.error('delete-access error:', err);
