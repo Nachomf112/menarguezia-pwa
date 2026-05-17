@@ -40,7 +40,7 @@ export default async function handler(req, res) {
         // listIdx es la posición real en Upstash (0 = más reciente)
         const _id = [obj.fecha || '', obj.hora || '', obj.nombre || '', listIdx].join('|');
 
-        return { ...obj, _id, _listIdx: listIdx };
+        return { ...obj, _id, _listIdx: listIdx, _raw: item };
       } catch {
         return null;
       }
