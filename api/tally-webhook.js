@@ -97,9 +97,11 @@ export default async function handler(req, res) {
     const caso     = extraerCampo(fields, 'Cuéntanos tu caso de uso');
 
     // ── GENERAR CÓDIGO Y EXPIRACIÓN ───────────────────────────
-    const codigo  = generarCodigo(nombre);
-    const expira  = calcularExpiracion(plan);
-    const usosMax = USOS_POR_PLAN[plan] ?? 10;
+    const codigo     = generarCodigo(nombre);
+const planReal   = plan; // guardamos el plan elegido para Make
+const planCodigo = 'Free'; // SIEMPRE generamos código Free
+const expira     = calcularExpiracion(planCodigo);
+const usosMax    = USOS_POR_PLAN[planCodigo];
 
     // ── CREAR CÓDIGO EN UPSTASH ───────────────────────────────
     if (process.env.KV_REST_API_URL && process.env.KV_REST_API_TOKEN) {
@@ -108,7 +110,8 @@ export default async function handler(req, res) {
         empresa,
         email,
         modulos: ['all'],
-        plan: plan.toLowerCase(),
+        plan: planCodigo.toLowerCase(),
+        planSolicitado: planReal,
         usos_max: usosMax,
         usos_usados: 0,
         expira,
@@ -137,7 +140,8 @@ export default async function handler(req, res) {
         empresa,
         email,
         telefono,
-        plan,
+        plan: planReal,
+        planCodigo: planCodigo,
         caso,
         codigo,
         expira,
