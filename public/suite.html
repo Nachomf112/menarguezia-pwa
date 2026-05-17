@@ -1618,8 +1618,8 @@ function analyzeBody(body, module) {
   return JSON.stringify(body);
 }
 async function runDetector(){
+ if(!checkUsos()) return;
  const txt = $('detectorText').value.trim();
- if(!txt){alert('Introduce un texto');return;}
  if(txt.length > MAX_CHARS){alert('El texto supera los 50.000 caracteres. Por favor reduce el contenido antes de analizar.');return;}
  consume();
  usage.detector++;
