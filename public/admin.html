@@ -399,13 +399,13 @@ function closeModal() {
 
 async function executeDelete() {
   if (!pendingDeleteIds) return;
-  const rawItemsToDelete = Array.from(pendingDeleteIds).map(i => allEntries[i]._raw);
+  const entryIdsToDelete = Array.from(pendingDeleteIds).map(i => allEntries[i]._entryId);
   closeModal();
   try {
     const resp = await fetch('/api/delete-access', {
       method: 'POST',
       headers: {'Content-Type':'application/json'},
-      body: JSON.stringify({pwd: adminPwd, rawItems: rawItemsToDelete})
+      body: JSON.stringify({pwd: adminPwd, entryIds: entryIdsToDelete})
     });
     const data = await resp.json();
     if (!data.ok) throw new Error(data.error);
