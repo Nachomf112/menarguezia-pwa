@@ -30,14 +30,14 @@ export default async function handler(req, res) {
 
     // Añadir cada ID al SET de borrados
     // SADD accesos:deleted id1 id2 ...
-    const saddResp = await fetch(`${KV_URL}/sadd/accesos:deleted`, {
-      method: 'POST',
-      headers,
-      body: JSON.stringify(entryIds.map(String))
-    });
-    const saddData = await saddResp.json();
+    for (const id of entryIds) {
+  await fetch(`${KV_URL}/sadd/accesos:deleted/${String(id)}`, {
+    method: 'GET',
+    headers
+  });
+}
 
-    return res.status(200).json({ ok: true, deleted: entryIds.length, added: saddData.result });
+return res.status(200).json({ ok: true, deleted: entryIds.length });
 
   } catch (err) {
     console.error('delete-access error:', err);
