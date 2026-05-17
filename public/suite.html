@@ -1403,6 +1403,25 @@ function showModule(id){
  setActiveButtons(id);
  closeDrawer();
  window.scrollTo({top:0, behavior:'smooth'});
+ if(id==='pricing') updatePricingButtons();
+}
+
+function updatePricingButtons(){
+ const plan=(currentUser?.plan||'free').toLowerCase();
+ const planes=['free','pro','business','enterprise'];
+ const btnIds=['btnPricingFree','btnPricingPro','btnPricingBusiness','btnPricingEnterprise'];
+ btnIds.forEach((btnId,i)=>{
+  const btn=$(btnId);
+  if(!btn) return;
+  if(planes[i]===plan){
+   btn.textContent='✓ Tu plan actual';
+   btn.style.background='var(--green)';
+   btn.style.color='#fff';
+   btn.style.border='none';
+   btn.style.cursor='default';
+   btn.onclick=(e)=>e.preventDefault();
+  }
+ });
 }
 
 // ── LOGIN CON CÓDIGO DE ACCESO ──
