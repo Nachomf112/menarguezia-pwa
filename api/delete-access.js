@@ -57,11 +57,11 @@ export default async function handler(req, res) {
 
     // Reescribir en orden original (LPUSH de atrás hacia adelante)
     for (let i = toKeep.length - 1; i >= 0; i--) {
-      const value = typeof toKeep[i] === 'string' ? toKeep[i] : JSON.stringify(toKeep[i]);
-      await fetch(`${KV_URL}/lpush/accesos`, {
-        method: 'POST', headers, body: JSON.stringify(value)
-      });
-    }
+  const original = toKeep[i];
+  await fetch(`${KV_URL}/lpush/accesos`, {
+    method: 'POST', headers, body: JSON.stringify([original])
+  });
+}
 
     const deleted = rawList.length - toKeep.length;
     const debugInfo = rawList.slice(0,5).map((item, idx) => {
