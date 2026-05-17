@@ -1487,7 +1487,16 @@ async function login(){
   });
   const data=await resp.json();
   if(!data.valid){
-   showLoginError(data.error||'Código incorrecto o expirado.');
+   if(data.upgrade){
+ showLoginError(data.error);
+ setTimeout(()=>{
+  if(confirm(data.error+'\n\n¿Quieres actualizar a Pro ahora?')){
+   window.open('https://buy.stripe.com/cNi7sM06o0rF9UE9MjcjS00','_blank');
+  }
+ },300);
+}else{
+ showLoginError(data.error||'Código incorrecto o expirado.');
+}
    btn.disabled=false;
    btn.textContent='Acceder a la suite →';
    return;
