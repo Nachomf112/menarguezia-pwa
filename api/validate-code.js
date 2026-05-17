@@ -133,9 +133,11 @@ export default async function handler(req, res) {
     const usosMax = codeData.usos_max || 0;
     if (usosMax > 0 && usosUsados >= usosMax) {
       return res.status(200).json({
-        valid: false,
-        error: `Límite de ${usosMax} análisis alcanzado. Contacta con info@imenarguez-ia.com`
-      });
+  valid: false,
+  error: `Has agotado tus ${usosMax} análisis del plan Free. Actualiza a Pro por 19€/mes para continuar.`,
+  upgrade: true,
+  stripeUrl: 'https://buy.stripe.com/cNi7sM06o0rF9UE9MjcjS00'
+});
     }
 
     // ── VALIDACIÓN 4: FINGERPRINT + CAPTURA DE DISPOSITIVO ────
