@@ -1902,7 +1902,7 @@ function loadCompliance(){
  toast('Ejemplo cargado');
 }
 
-async function runCompliance(){
+async function runCompliance(){if(!checkUsos()) return;
  const txt = $('complianceText').value.trim();
  if(!txt){alert('Describe el uso');return;}
  consume();
