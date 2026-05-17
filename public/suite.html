@@ -1796,7 +1796,7 @@ function loadLinkedin(){
  toast('Ejemplo cargado');
 }
 
-async function runLinkedin(){
+async function runLinkedin(){if(!checkUsos()) return;
  const txt = $('linkedinText').value.trim();
  if(!txt){alert('Introduce una idea');return;}
  consume();
