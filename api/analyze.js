@@ -7,7 +7,7 @@
 // ════════════════════════════════════════════════════════════════
 
 const DAILY_LIMIT = 50;
-const HOURLY_LIMIT_PER_IP = 10;
+const HOURLY_LIMIT_PER_IP = 30;
 
 const ipCounters = {};
 let dailyCount = 0;
