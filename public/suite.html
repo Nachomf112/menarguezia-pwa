@@ -1482,7 +1482,8 @@ async function login(){
    $('sessionUsosVal').textContent=data.usos_usados+' / '+data.usos_max+' usados';
   }
   logAccess(data.nombre,data.empresa||'');
-  toast('Bienvenido, '+data.nombre+' 👋');
+$('activity').innerHTML='👋 Bienvenido, <strong>'+data.nombre+'</strong>. Tu suite está lista y operativa.';
+toast('Bienvenido, '+data.nombre+' 👋');
  } catch(err){
   showLoginError('Error de conexión. Inténtalo de nuevo.');
   btn.disabled=false;
