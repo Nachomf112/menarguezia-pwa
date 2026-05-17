@@ -1862,7 +1862,7 @@ function loadSOC(){
  toast('Ejemplo cargado');
 }
 
-async function runSOC(){
+async function runSOC(){if(!checkUsos()) return;
  const txt = $('socText').value.trim();
  if(!txt){alert('Introduce logs');return;}
  consume();
