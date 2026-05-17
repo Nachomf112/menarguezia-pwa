@@ -1566,7 +1566,16 @@ function consume(){
   }
  }
 }
-
+function checkUsos(){
+ if(currentUser&&currentUser.usos_max>0&&currentUser.usos_usados>=currentUser.usos_max){
+  toast('⚠️ Has agotado tus análisis. Actualiza a Pro para continuar.');
+  if(confirm('Has alcanzado el límite de tu plan Free.\n\n¿Quieres actualizar a Pro por 19€/mes?')){
+   window.open('https://buy.stripe.com/cNi7sM06o0rF9UE9MjcjS00','_blank');
+  }
+  return false;
+ }
+ return true;
+}
 function addRisk(){
  riskCount++;
  $('riskCounter').textContent=riskCount;
