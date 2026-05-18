@@ -1402,7 +1402,7 @@ function showModule(id){
  if(target){target.classList.add('active')}
  setActiveButtons(id);
  closeDrawer();
- window.scrollTo({top:0, behavior:'smooth'});
+ if(window.innerWidth > 1100) window.scrollTo({top:0, behavior:'smooth'});
  if(id==='pricing') updatePricingButtons();
 }
 
