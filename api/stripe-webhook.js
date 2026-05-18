@@ -39,22 +39,31 @@ async function verificarFirmaStripe(rawBody, sig, secret) {
     if (!timestamp || !v1) return false;
 
     const payload = `${timestamp}.${rawBody.toString()}`;
-    const secretClean = secret.startsWith('whsec_')
-      ? secret.slice(6)
-      : secret;
 
-    const keyBytes = Buffer.from(secretClean, 'base64');
-    const encoder = new TextEncoder();
-    const key = await crypto.subtle.importKey(
-      'raw', keyBytes,
-      { name: 'HMAC', hash: 'SHA-256' },
-      false, ['sign']
-    );
-    const sig_buffer = await crypto.subtle.sign('HMAC', key, encoder.encode(payload));
-    const computed = Array.from(new Uint8Array(sig_buffer))
-      .map(b => b.toString(16).padStart(2, '0')).join('');
+    async function computeSig(s) {
+      const secretClean = s.startsWith('whsec_') ? s.slice(6) : s;
+      const keyBytes = Buffer.from(secretClean, 'base64');
+      const encoder = new TextEncoder();
+      const key = await crypto.subtle.importKey(
+        'raw', keyBytes,
+        { name: 'HMAC', hash: 'SHA-256' },
+        false, ['sign']
+      );
+      const sig_buffer = await crypto.subtle.sign('HMAC', key, encoder.encode(payload));
+      return Array.from(new Uint8Array(sig_buffer))
+        .map(b => b.toString(16).padStart(2, '0')).join('');
+    }
 
-    return computed === v1;
+    const computed = await computeSig(secret);
+    if (computed === v1) return true;
+
+    const secretTest = process.env.STRIPE_WEBHOOK_SECRET_TEST;
+    if (secretTest) {
+      const computedTest = await computeSig(secretTest);
+      if (computedTest === v1) return true;
+    }
+
+    return false;
   } catch (e) {
     console.error('Error verificando firma:', e.message);
     return false;
