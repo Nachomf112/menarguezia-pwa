@@ -2159,9 +2159,16 @@ document.addEventListener('click', (e)=>{
  }
 });
 
+let touchStartY = 0;
+document.addEventListener('touchstart', (e)=>{
+ touchStartY = e.touches[0].clientY;
+},{passive:true});
+
 document.addEventListener('touchend', (e)=>{
  const tappable=e.target.closest('[data-action],[data-module],[data-install]');
  if(tappable){
+  const diff = Math.abs(e.changedTouches[0].clientY - touchStartY);
+  if(diff > 10) return;
   e.preventDefault();
   tappable.click();
  }
