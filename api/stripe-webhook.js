@@ -1,5 +1,5 @@
 // ════════════════════════════════════════════════════════════════
-// api/stripe-webhook.js — Menarguez-IA Solutions v3
+// api/stripe-webhook.js — Menarguez-IA Solutions v5
 // ════════════════════════════════════════════════════════════════
 
 export const config = { api: { bodyParser: false } };
@@ -26,6 +26,30 @@ async function getRawBody(req) {
   });
 }
 
+async function computeHMAC(secret, payload) {
+  // Elimina prefijo whsec_
+  const secretClean = secret.startsWith('whsec_') ? secret.slice(6) : secret;
+
+  let keyBytes;
+  // Si es hex puro (64+ chars, solo 0-9a-f) → decodifica como hex
+  // Si no → decodifica como base64
+  if (/^[0-9a-f]{40,}$/i.test(secretClean)) {
+    keyBytes = Buffer.from(secretClean, 'hex');
+  } else {
+    keyBytes = Buffer.from(secretClean, 'base64');
+  }
+
+  const encoder = new TextEncoder();
+  const key = await crypto.subtle.importKey(
+    'raw', keyBytes,
+    { name: 'HMAC', hash: 'SHA-256' },
+    false, ['sign']
+  );
+  const sig_buffer = await crypto.subtle.sign('HMAC', key, encoder.encode(payload));
+  return Array.from(new Uint8Array(sig_buffer))
+    .map(b => b.toString(16).padStart(2, '0')).join('');
+}
+
 async function verificarFirmaStripe(rawBody, sig) {
   try {
     const parts = sig.split(',').reduce((acc, part) => {
@@ -40,28 +64,13 @@ async function verificarFirmaStripe(rawBody, sig) {
 
     const payload = `${timestamp}.${rawBody.toString()}`;
 
-    async function computeSig(s) {
-      const secretClean = s.startsWith('whsec_') ? s.slice(6) : s;
-      const keyBytes = Buffer.from(secretClean, 'base64');
-      const encoder = new TextEncoder();
-      const key = await crypto.subtle.importKey(
-        'raw', keyBytes,
-        { name: 'HMAC', hash: 'SHA-256' },
-        false, ['sign']
-      );
-      const sig_buffer = await crypto.subtle.sign('HMAC', key, encoder.encode(payload));
-      return Array.from(new Uint8Array(sig_buffer))
-        .map(b => b.toString(16).padStart(2, '0')).join('');
-    }
-
-    // Prueba todos los secretos disponibles (live + test)
     const secretos = [
       process.env.STRIPE_WEBHOOK_SECRET,
       process.env.STRIPE_WEBHOOK_SECRET_TEST
     ].filter(Boolean);
 
     for (const s of secretos) {
-      const computed = await computeSig(s);
+      const computed = await computeHMAC(s, payload);
       if (computed === v1) return true;
     }
 
@@ -89,9 +98,7 @@ export default async function handler(req, res) {
 
   const firmaValida = await verificarFirmaStripe(rawBody, sig);
   if (!firmaValida) {
-    const secretLiveVal = process.env.STRIPE_WEBHOOK_SECRET ? process.env.STRIPE_WEBHOOK_SECRET.substring(0, 12) + '...' : 'VACÍO';
-    const secretTestVal = process.env.STRIPE_WEBHOOK_SECRET_TEST ? process.env.STRIPE_WEBHOOK_SECRET_TEST.substring(0, 12) + '...' : 'VACÍO';
-    return res.status(400).json({ error: 'Firma inválida', live: secretLiveVal, test: secretTestVal });
+    return res.status(400).json({ error: 'Firma inválida' });
   }
 
   let event;
