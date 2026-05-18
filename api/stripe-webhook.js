@@ -89,8 +89,9 @@ export default async function handler(req, res) {
 
   const firmaValida = await verificarFirmaStripe(rawBody, sig);
   if (!firmaValida) {
-    console.error('Firma Stripe inválida');
-    return res.status(400).json({ error: 'Firma inválida' });
+    const secretLiveVal = process.env.STRIPE_WEBHOOK_SECRET ? process.env.STRIPE_WEBHOOK_SECRET.substring(0, 12) + '...' : 'VACÍO';
+    const secretTestVal = process.env.STRIPE_WEBHOOK_SECRET_TEST ? process.env.STRIPE_WEBHOOK_SECRET_TEST.substring(0, 12) + '...' : 'VACÍO';
+    return res.status(400).json({ error: 'Firma inválida', live: secretLiveVal, test: secretTestVal });
   }
 
   let event;
