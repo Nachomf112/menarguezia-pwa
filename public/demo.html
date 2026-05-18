@@ -1,0 +1,793 @@
+<!DOCTYPE html>
+<html lang="es" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#070d1a">
+<title>Demo Gratuita · Menarguez-IA</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+<style>
+:root{
+ --bg:#070d1a;
+ --panel:#121c31;
+ --panel2:#17233f;
+ --line:#29395f;
+ --brand:#6d5efc;
+ --brand2:#978dff;
+ --text:#eef2ff;
+ --muted:#9ba7c8;
+ --green:#10b981;
+ --orange:#f59e0b;
+ --red:#ef4444;
+ --blue:#38bdf8;
+ --shadow:rgba(0,0,0,.32);
+}
+
+*{box-sizing:border-box}
+
+html,body{
+ margin:0;
+ min-height:100%;
+ font-family:'Geist',system-ui,sans-serif;
+ background:var(--bg);
+ color:var(--text);
+}
+
+body{
+ background:
+  radial-gradient(circle at top left, rgba(109,94,252,.18), transparent 34%),
+  linear-gradient(180deg,#050914,var(--bg));
+ padding-bottom:60px;
+}
+
+button,a,input,select,textarea{ font:inherit; }
+button{ cursor:pointer; min-height:44px; }
+
+/* TOPBAR */
+.topbar{
+ position:sticky;
+ top:0;
+ z-index:50;
+ padding:14px 5vw;
+ background:rgba(7,13,26,.88);
+ backdrop-filter:blur(14px);
+ border-bottom:1px solid rgba(41,57,95,.6);
+ display:flex;
+ justify-content:space-between;
+ align-items:center;
+ gap:12px;
+}
+
+.brand{
+ display:flex;
+ align-items:center;
+ gap:12px;
+}
+
+.logo{
+ width:40px;
+ height:40px;
+ border-radius:12px;
+ background:linear-gradient(135deg,var(--brand),var(--brand2));
+ display:grid;
+ place-items:center;
+ color:white;
+ font-weight:900;
+ font-size:18px;
+ box-shadow:0 0 20px rgba(109,94,252,.35);
+}
+
+.brand-title h1{
+ margin:0;
+ font-size:17px;
+ font-weight:700;
+}
+
+.brand-title p{
+ margin:2px 0 0;
+ color:var(--muted);
+ font-size:11px;
+}
+
+.demo-badge{
+ background:linear-gradient(135deg,rgba(109,94,252,.2),rgba(151,141,255,.15));
+ border:1px solid rgba(109,94,252,.4);
+ color:var(--brand2);
+ font-size:11px;
+ font-weight:700;
+ letter-spacing:.06em;
+ text-transform:uppercase;
+ padding:4px 12px;
+ border-radius:20px;
+}
+
+.top-cta{
+ display:flex;
+ align-items:center;
+ gap:10px;
+}
+
+.btn-access{
+ background:linear-gradient(135deg,var(--brand),var(--brand2));
+ color:white;
+ border:none;
+ border-radius:12px;
+ padding:9px 18px;
+ font-weight:700;
+ font-size:13px;
+ text-decoration:none;
+ display:inline-flex;
+ align-items:center;
+ gap:6px;
+ transition:.2s;
+}
+
+.btn-access:hover{ opacity:.85; transform:translateY(-1px); }
+
+/* HERO DEMO */
+.hero-demo{
+ text-align:center;
+ padding:52px 5vw 40px;
+ max-width:720px;
+ margin:0 auto;
+}
+
+.hero-demo h2{
+ font-size:clamp(26px,4vw,40px);
+ font-weight:800;
+ margin:0 0 12px;
+ letter-spacing:-.02em;
+}
+
+.hero-demo p{
+ color:var(--muted);
+ font-size:16px;
+ line-height:1.7;
+ margin:0 0 28px;
+}
+
+/* CONTADOR */
+.counter-wrap{
+ display:inline-flex;
+ align-items:center;
+ gap:12px;
+ background:var(--panel);
+ border:1px solid var(--line);
+ border-radius:16px;
+ padding:14px 22px;
+ margin-bottom:36px;
+}
+
+.counter-label{
+ color:var(--muted);
+ font-size:13px;
+}
+
+.counter-dots{
+ display:flex;
+ gap:7px;
+}
+
+.dot{
+ width:14px;
+ height:14px;
+ border-radius:50%;
+ background:var(--brand);
+ box-shadow:0 0 8px rgba(109,94,252,.5);
+ transition:.3s;
+}
+
+.dot.used{
+ background:var(--panel2);
+ border:1px solid var(--line);
+ box-shadow:none;
+}
+
+/* APP */
+.app{
+ width:min(900px,92%);
+ margin:0 auto;
+}
+
+/* TABS */
+.tabs{
+ display:flex;
+ gap:10px;
+ margin-bottom:20px;
+ flex-wrap:wrap;
+}
+
+.tab{
+ background:var(--panel);
+ border:1px solid var(--line);
+ color:var(--muted);
+ border-radius:14px;
+ padding:11px 20px;
+ font-weight:700;
+ font-size:14px;
+ transition:.2s;
+}
+
+.tab.active{
+ background:rgba(109,94,252,.16);
+ border-color:rgba(109,94,252,.75);
+ color:var(--text);
+}
+
+.tab:hover:not(.active){
+ border-color:rgba(109,94,252,.4);
+ color:var(--text);
+}
+
+/* PANEL */
+.panel{
+ background:var(--panel);
+ border:1px solid var(--line);
+ border-radius:24px;
+ padding:24px;
+ box-shadow:0 18px 50px var(--shadow);
+}
+
+.module{ display:none; }
+.module.active{ display:block; }
+
+textarea,input{
+ width:100%;
+ background:var(--bg);
+ border:1px solid var(--line);
+ color:var(--text);
+ border-radius:16px;
+ padding:15px;
+ outline:none;
+ font-size:15px;
+ font-family:inherit;
+}
+
+textarea{ min-height:160px; resize:vertical; }
+
+textarea:focus,input:focus{
+ border-color:var(--brand);
+ box-shadow:0 0 0 4px rgba(109,94,252,.14);
+}
+
+.actions{
+ display:flex;
+ gap:10px;
+ flex-wrap:wrap;
+ margin-top:14px;
+}
+
+.btn{
+ padding:12px 18px;
+ border-radius:14px;
+ font-weight:700;
+ color:var(--text);
+ background:var(--panel2);
+ border:1px solid var(--line);
+ font-size:14px;
+}
+
+.primary{
+ background:linear-gradient(135deg,var(--brand),var(--brand2));
+ color:white;
+ border:none;
+}
+
+.output{
+ margin-top:16px;
+ background:var(--bg);
+ border:1px solid var(--line);
+ border-radius:18px;
+ padding:18px;
+ line-height:1.8;
+ overflow:auto;
+ min-height:60px;
+}
+
+.card-row{
+ display:grid;
+ grid-template-columns:1fr 1fr;
+ gap:14px;
+ margin-top:14px;
+}
+
+.card{
+ background:var(--panel2);
+ border:1px solid var(--line);
+ border-radius:14px;
+ padding:16px;
+}
+
+.card span{ color:var(--muted); font-size:12px; }
+.card strong{ display:block; font-size:24px; margin-top:4px; }
+
+.tag{
+ display:inline-block;
+ padding:5px 10px;
+ border-radius:999px;
+ font-size:12px;
+ font-weight:900;
+}
+
+.tag-green{background:rgba(16,185,129,.16);color:#10b981}
+.tag-red{background:rgba(239,68,68,.14);color:#ef4444}
+.tag-orange{background:rgba(245,158,11,.15);color:#f59e0b}
+
+/* CTA UPGRADE */
+.cta-upgrade{
+ display:none;
+ margin-top:24px;
+ background:linear-gradient(135deg,rgba(109,94,252,.12),rgba(151,141,255,.08));
+ border:1px solid rgba(109,94,252,.3);
+ border-radius:20px;
+ padding:28px;
+ text-align:center;
+}
+
+.cta-upgrade.show{ display:block; }
+
+.cta-upgrade h3{
+ font-size:20px;
+ font-weight:800;
+ margin:0 0 8px;
+}
+
+.cta-upgrade p{
+ color:var(--muted);
+ font-size:14px;
+ margin:0 0 20px;
+ line-height:1.6;
+}
+
+.cta-buttons{
+ display:flex;
+ gap:12px;
+ justify-content:center;
+ flex-wrap:wrap;
+}
+
+.btn-cta-primary{
+ background:linear-gradient(135deg,var(--brand),var(--brand2));
+ color:white;
+ border:none;
+ border-radius:14px;
+ padding:13px 24px;
+ font-weight:700;
+ font-size:14px;
+ text-decoration:none;
+ display:inline-flex;
+ align-items:center;
+ gap:8px;
+ box-shadow:0 8px 24px rgba(109,94,252,.35);
+ transition:.2s;
+}
+
+.btn-cta-primary:hover{ opacity:.9; transform:translateY(-1px); }
+
+.btn-cta-outline{
+ background:transparent;
+ color:var(--brand2);
+ border:1px solid rgba(109,94,252,.4);
+ border-radius:14px;
+ padding:13px 24px;
+ font-weight:700;
+ font-size:14px;
+ text-decoration:none;
+ transition:.2s;
+}
+
+.btn-cta-outline:hover{ border-color:var(--brand2); }
+
+/* BLOCKED OVERLAY */
+.blocked-overlay{
+ display:none;
+ position:absolute;
+ inset:0;
+ background:rgba(7,13,26,.85);
+ backdrop-filter:blur(4px);
+ border-radius:24px;
+ z-index:10;
+ place-items:center;
+ text-align:center;
+ padding:24px;
+}
+
+.blocked-overlay.show{ display:grid; }
+
+.blocked-inner{
+ max-width:380px;
+}
+
+.blocked-inner h3{
+ font-size:20px;
+ font-weight:800;
+ margin:0 0 10px;
+}
+
+.blocked-inner p{
+ color:var(--muted);
+ font-size:14px;
+ line-height:1.6;
+ margin:0 0 20px;
+}
+
+/* TOAST */
+.toast-wrap{
+ position:fixed;
+ top:14px;
+ right:14px;
+ z-index:120;
+ display:flex;
+ flex-direction:column;
+ gap:10px;
+ width:min(340px,calc(100vw - 28px));
+}
+
+.toast{
+ background:var(--panel);
+ border:1px solid var(--line);
+ border-left:5px solid var(--brand);
+ padding:13px;
+ border-radius:14px;
+ box-shadow:0 14px 35px var(--shadow);
+ font-size:14px;
+}
+
+/* FOOTER */
+.demo-footer{
+ text-align:center;
+ padding:40px 5vw 20px;
+ color:var(--muted);
+ font-size:13px;
+}
+
+.demo-footer a{
+ color:var(--brand2);
+ text-decoration:none;
+ font-weight:600;
+}
+
+/* SPIN */
+@keyframes spin{ to{ transform:rotate(360deg); } }
+
+@media(max-width:600px){
+ .card-row{ grid-template-columns:1fr; }
+ .hero-demo{ padding:36px 4vw 28px; }
+ .panel{ padding:18px; }
+ .top-cta .demo-badge{ display:none; }
+}
+</style>
+</head>
+
+<body>
+<div class="toast-wrap" id="toasts"></div>
+
+<!-- TOPBAR -->
+<header class="topbar">
+ <div class="brand">
+  <div class="logo">M</div>
+  <div class="brand-title">
+   <h1>Menarguez-IA</h1>
+   <p>Enterprise AI Platform</p>
+  </div>
+ </div>
+ <div class="top-cta">
+  <span class="demo-badge">Demo gratuita</span>
+  <a href="https://tally.so/r/jaJM8Q" target="_blank" class="btn-access">Acceso completo →</a>
+ </div>
+</header>
+
+<!-- HERO -->
+<div class="hero-demo">
+ <h2>Prueba la suite sin registrarte</h2>
+ <p>2 análisis gratuitos. Sin tarjeta. Sin login.<br>Elige un módulo y comprueba el poder de la IA aplicada a tu negocio.</p>
+
+ <div class="counter-wrap">
+  <span class="counter-label">Análisis disponibles:</span>
+  <div class="counter-dots">
+   <div class="dot" id="dot1"></div>
+   <div class="dot" id="dot2"></div>
+  </div>
+  <span id="counterText" style="font-weight:700;font-size:14px;color:var(--brand2)">2 / 2</span>
+ </div>
+</div>
+
+<!-- APP -->
+<div class="app">
+
+ <!-- TABS -->
+ <div class="tabs">
+  <button class="tab active" onclick="switchTab('detector')">🧠 AI Detector</button>
+  <button class="tab" onclick="switchTab('soc')">🧬 SOC Assistant</button>
+ </div>
+
+ <!-- AI DETECTOR -->
+ <div style="position:relative">
+  <div class="blocked-overlay" id="blockedDetector">
+   <div class="blocked-inner">
+    <div style="font-size:36px;margin-bottom:12px">🔒</div>
+    <h3>Análisis agotados</h3>
+    <p>Has usado tus 2 análisis gratuitos. Solicita acceso completo para análisis ilimitados.</p>
+    <a href="https://tally.so/r/jaJM8Q" target="_blank" class="btn-cta-primary">Solicitar acceso gratis →</a>
+   </div>
+  </div>
+
+  <section id="detector" class="module panel active">
+   <h2 style="margin:0 0 6px;font-size:20px">🧠 AI Detector</h2>
+   <p style="color:var(--muted);margin:0 0 16px;font-size:14px">Detecta si un texto fue escrito por IA o por un humano. Analiza patrones, naturalidad y temperatura humana.</p>
+   <textarea id="detectorText" placeholder="Pega aquí el texto que quieres analizar..."></textarea>
+   <div class="actions">
+    <button class="btn primary" onclick="runDetector()">Analizar texto</button>
+    <button class="btn" onclick="loadDetectorExample()">Ver ejemplo</button>
+    <button class="btn" onclick="document.getElementById('detectorText').value='';document.getElementById('detectorOutput').textContent='Esperando análisis...'">Limpiar</button>
+   </div>
+   <div class="card-row">
+    <div class="card"><span>Human Score</span><strong id="humanScore" style="color:var(--green)">—</strong></div>
+    <div class="card"><span>Riesgo IA</span><strong id="aiRisk">—</strong></div>
+   </div>
+   <div class="output" id="detectorOutput">Pega un texto arriba y pulsa "Analizar texto" para ver el resultado.</div>
+  </section>
+ </div>
+
+ <!-- SOC ASSISTANT -->
+ <div style="position:relative;display:none" id="socWrap">
+  <div class="blocked-overlay" id="blockedSoc">
+   <div class="blocked-inner">
+    <div style="font-size:36px;margin-bottom:12px">🔒</div>
+    <h3>Análisis agotados</h3>
+    <p>Has usado tus 2 análisis gratuitos. Solicita acceso completo para análisis ilimitados.</p>
+    <a href="https://tally.so/r/jaJM8Q" target="_blank" class="btn-cta-primary">Solicitar acceso gratis →</a>
+   </div>
+  </div>
+
+  <section id="soc" class="module panel">
+   <h2 style="margin:0 0 6px;font-size:20px">🧬 SOC Assistant</h2>
+   <p style="color:var(--muted);margin:0 0 16px;font-size:14px">Analiza logs de seguridad, extrae IOCs, clasifica la amenaza con MITRE ATT&CK y propone acciones.</p>
+   <textarea id="socText" placeholder="Pega logs o alertas de seguridad..."></textarea>
+   <div class="actions">
+    <button class="btn primary" onclick="runSOC()">Analizar logs</button>
+    <button class="btn" onclick="loadSOCExample()">Ver ejemplo</button>
+    <button class="btn" onclick="document.getElementById('socText').value='';document.getElementById('socOutput').textContent='Esperando logs...'">Limpiar</button>
+   </div>
+   <div class="output" id="socOutput">Pega logs o alertas arriba y pulsa "Analizar logs".</div>
+  </section>
+ </div>
+
+ <!-- CTA UPGRADE -->
+ <div class="cta-upgrade" id="ctaUpgrade">
+  <div style="font-size:32px;margin-bottom:12px">🚀</div>
+  <h3>¿Te ha gustado?</h3>
+  <p>Solicita acceso completo y obtén 10 análisis gratuitos al día.<br>Sin tarjeta de crédito. Sin permanencia.</p>
+  <div class="cta-buttons">
+   <a href="https://tally.so/r/jaJM8Q" target="_blank" class="btn-cta-primary">Solicitar acceso gratis →</a>
+   <a href="https://buy.stripe.com/cNi7sM06o0rF9UE9MjcjS00" target="_blank" class="btn-cta-outline">Ver plan Pro 19€/mes</a>
+  </div>
+ </div>
+
+</div>
+
+<!-- FOOTER -->
+<div class="demo-footer">
+ <p>© 2026 <a href="https://ai.menarguez-ia.com">Menarguez-IA Solutions</a> · <a href="/suite.html">Acceder con código →</a></p>
+</div>
+
+<script>
+let demoCredits = 2;
+
+function toast(msg){
+ const t = document.createElement('div');
+ t.className = 'toast';
+ t.textContent = msg;
+ document.getElementById('toasts').appendChild(t);
+ setTimeout(() => t.remove(), 3500);
+}
+
+function updateCounter(){
+ const d1 = document.getElementById('dot1');
+ const d2 = document.getElementById('dot2');
+ const txt = document.getElementById('counterText');
+ if(demoCredits <= 0){
+  d1.classList.add('used');
+  d2.classList.add('used');
+  txt.textContent = '0 / 2';
+  txt.style.color = 'var(--red)';
+ } else if(demoCredits === 1){
+  d2.classList.add('used');
+  txt.textContent = '1 / 2';
+  txt.style.color = 'var(--orange)';
+ } else {
+  txt.textContent = '2 / 2';
+  txt.style.color = 'var(--brand2)';
+ }
+}
+
+function consumeCredit(){
+ demoCredits--;
+ updateCounter();
+ if(demoCredits <= 0){
+  setTimeout(() => {
+   document.getElementById('blockedDetector').classList.add('show');
+   document.getElementById('blockedSoc').classList.add('show');
+   document.getElementById('ctaUpgrade').classList.add('show');
+  }, 1500);
+ }
+}
+
+function switchTab(tab){
+ document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+ event.target.classList.add('active');
+
+ const detectorWrap = document.querySelector('[style*="position:relative"]:first-of-type');
+ const socWrap = document.getElementById('socWrap');
+
+ if(tab === 'detector'){
+  document.getElementById('detector').classList.add('active');
+  document.getElementById('soc').classList.remove('active');
+  socWrap.style.display = 'none';
+  detectorWrap.style.display = 'block';
+ } else {
+  document.getElementById('soc').classList.add('active');
+  document.getElementById('detector').classList.remove('active');
+  socWrap.style.display = 'block';
+  detectorWrap.style.display = 'none';
+ }
+}
+
+function loadDetectorExample(){
+ document.getElementById('detectorText').value = 'La inteligencia artificial está revolucionando las organizaciones mediante soluciones innovadoras y estratégicas que optimizan significativamente la productividad empresarial en todos los niveles operativos.';
+ toast('Ejemplo cargado — pulsa Analizar');
+}
+
+function loadSOCExample(){
+ document.getElementById('socText').value = 'Failed login from 192.168.1.55 repeated 47 times in 2 minutes. Possible brute force attack detected.';
+ toast('Ejemplo cargado — pulsa Analizar logs');
+}
+
+async function runDetector(){
+ if(demoCredits <= 0){
+  document.getElementById('ctaUpgrade').classList.add('show');
+  document.getElementById('ctaUpgrade').scrollIntoView({behavior:'smooth'});
+  return;
+ }
+ const txt = document.getElementById('detectorText').value.trim();
+ if(!txt){ alert('Introduce un texto para analizar.'); return; }
+
+ document.getElementById('detectorOutput').innerHTML = '<div style="display:flex;align-items:center;gap:10px;color:var(--muted);padding:8px 0"><span style="display:inline-block;width:14px;height:14px;border:2px solid var(--brand2);border-top-color:transparent;border-radius:50%;animation:spin .7s linear infinite"></span> Analizando con IA...</div>';
+ document.getElementById('humanScore').textContent = '...';
+ document.getElementById('aiRisk').textContent = '...';
+
+ try {
+  const prompt = 'Eres un experto en deteccion de contenido generado por IA. Analiza el siguiente texto.\n\nTEXTO:\n' + txt + '\n\nResponde UNICAMENTE con JSON valido sin markdown:\n{"human_score":numero 0-100,"verdict":"ALTO"|"MEDIO"|"BAJO","tipo_escritura":"IA"|"Corporativa humana"|"Academica humana"|"Informal humana"|"Mixta","patrones":[{"nombre":"nombre","nivel":"alto"|"medio"|"bajo","descripcion":"max 60 chars","es_humano":true|false},{"nombre":"nombre","nivel":"alto"|"medio"|"bajo","descripcion":"max 60 chars","es_humano":true|false},{"nombre":"nombre","nivel":"alto"|"medio"|"bajo","descripcion":"max 60 chars","es_humano":true|false}],"temperatura_humana":numero 0-100,"resumen":"analisis en 2 frases"}';
+
+  const resp = await fetch('/api/analyze', {
+   method: 'POST',
+   headers: {'Content-Type': 'application/json'},
+   body: JSON.stringify({
+    model: 'claude-sonnet-4-20250514',
+    max_tokens: 700,
+    messages: [{ role: 'user', content: prompt }]
+   })
+  });
+
+  const data = await resp.json();
+
+  if(resp.status === 429){
+   document.getElementById('detectorOutput').innerHTML = '<div style="background:#FAEEDA;border:1px solid #EF9F27;border-radius:8px;padding:14px;color:#633806;font-size:13px">' + (data.message || 'Límite alcanzado') + '</div>';
+   return;
+  }
+
+  const raw = data.content.map(i => i.text || '').join('').replace(/```json|```/g,'').trim();
+  const r = JSON.parse(raw);
+
+  const human = r.human_score;
+  const verdict = r.verdict || (human > 70 ? 'BAJO' : human > 45 ? 'MEDIO' : 'ALTO');
+  const verdictColor = verdict === 'ALTO' ? '#E24B4A' : verdict === 'MEDIO' ? '#EF9F27' : '#1D9E75';
+  const barWidth = 100 - human;
+
+  document.getElementById('humanScore').textContent = human + '%';
+  document.getElementById('humanScore').style.color = human > 60 ? 'var(--green)' : human > 40 ? 'var(--orange)' : 'var(--red)';
+  document.getElementById('aiRisk').textContent = verdict;
+
+  function nivelColor(n){ return n === 'alto' ? '#E24B4A' : n === 'medio' ? '#EF9F27' : '#1D9E75'; }
+
+  const patronesHTML = (r.patrones || []).map(p => {
+   const dotColor = p.es_humano ? '#1D9E75' : nivelColor(p.nivel);
+   const badgeText = p.es_humano ? 'HUMANO' : p.nivel.toUpperCase();
+   const badgeBg = p.es_humano ? 'rgba(16,185,129,.15)' : nivelColor(p.nivel) + '22';
+   return `<div style="display:flex;align-items:flex-start;gap:10px;padding:9px 12px;background:var(--panel);border-radius:8px;border:1px solid var(--line)">
+    <div style="width:8px;height:8px;border-radius:50%;background:${dotColor};margin-top:4px;flex-shrink:0"></div>
+    <div style="flex:1">
+     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:3px">
+      <span style="font-size:12px;font-weight:600">${p.nombre}</span>
+      <span style="font-size:10px;font-weight:700;padding:1px 7px;border-radius:20px;background:${badgeBg};color:${dotColor}">${badgeText}</span>
+     </div>
+     <div style="font-size:11px;color:var(--muted)">${p.descripcion}</div>
+    </div>
+   </div>`;
+  }).join('');
+
+  document.getElementById('detectorOutput').innerHTML =
+   `<div style="margin-bottom:14px">
+    <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--muted);margin-bottom:5px"><span>Humano</span><span>IA</span></div>
+    <div style="height:6px;background:var(--line);border-radius:3px;overflow:hidden">
+     <div style="height:100%;width:${barWidth}%;background:${verdictColor};border-radius:3px;transition:width .6s ease"></div>
+    </div>
+    <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--muted);margin-top:4px"><span>${human}% humano</span><span>${barWidth}% IA</span></div>
+   </div>
+   <div style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap">
+    <div style="background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:8px 12px;font-size:12px"><span style="color:var(--muted)">Tipo: </span><strong style="color:${r.tipo_escritura && r.tipo_escritura.includes('IA') ? '#E24B4A' : '#1D9E75'}">${r.tipo_escritura || '—'}</strong></div>
+    <div style="background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:8px 12px;font-size:12px"><span style="color:var(--muted)">Temperatura humana: </span><strong>${r.temperatura_humana}/100</strong></div>
+   </div>
+   <div style="display:flex;flex-direction:column;gap:7px;margin-bottom:14px">${patronesHTML}</div>
+   <div style="background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:12px;font-size:13px;color:var(--muted);line-height:1.6">${r.resumen}</div>`;
+
+  consumeCredit();
+  toast('✅ Análisis completado');
+
+ } catch(e){
+  document.getElementById('detectorOutput').innerHTML = '<span style="color:#E24B4A">Error: ' + e.message + '</span>';
+ }
+}
+
+async function runSOC(){
+ if(demoCredits <= 0){
+  document.getElementById('ctaUpgrade').classList.add('show');
+  document.getElementById('ctaUpgrade').scrollIntoView({behavior:'smooth'});
+  return;
+ }
+ const txt = document.getElementById('socText').value.trim();
+ if(!txt){ alert('Introduce logs o alertas para analizar.'); return; }
+
+ document.getElementById('socOutput').innerHTML = '<div style="display:flex;align-items:center;gap:10px;color:var(--muted);padding:8px 0"><span style="display:inline-block;width:14px;height:14px;border:2px solid var(--brand2);border-top-color:transparent;border-radius:50%;animation:spin .7s linear infinite"></span> Analizando logs...</div>';
+
+ try {
+  const prompt = 'Eres un analista SOC experto en ciberseguridad. Analiza el siguiente log.\n\nLOG:\n' + txt + '\n\nResponde UNICAMENTE con JSON valido sin markdown:\n{"amenaza":"nombre","severidad":"CRITICA"|"ALTA"|"MEDIA"|"BAJA","mitre_tecnica":"ID y nombre MITRE ATT&CK","ioc":["ioc1","ioc2"],"acciones":["accion1","accion2","accion3"],"explicacion":"explicacion en 2 frases","confianza":numero 0-100}';
+
+  const resp = await fetch('/api/analyze', {
+   method: 'POST',
+   headers: {'Content-Type': 'application/json'},
+   body: JSON.stringify({
+    model: 'claude-sonnet-4-20250514',
+    max_tokens: 500,
+    messages: [{ role: 'user', content: prompt }]
+   })
+  });
+
+  const data = await resp.json();
+
+  if(resp.status === 429){
+   document.getElementById('socOutput').innerHTML = '<div style="background:#FAEEDA;border:1px solid #EF9F27;border-radius:8px;padding:14px;color:#633806;font-size:13px">' + (data.message || 'Límite alcanzado') + '</div>';
+   return;
+  }
+
+  const raw = data.content.map(i => i.text || '').join('').replace(/```json|```/g,'').trim();
+  const r = JSON.parse(raw);
+
+  const sevColor = r.severidad === 'CRITICA' ? '#A32D2D' : r.severidad === 'ALTA' ? '#E24B4A' : r.severidad === 'MEDIA' ? '#EF9F27' : '#1D9E75';
+  const sevBg = r.severidad === 'CRITICA' || r.severidad === 'ALTA' ? '#FCEBEB' : r.severidad === 'MEDIA' ? '#FAEEDA' : '#E1F5EE';
+
+  const iocHTML = (r.ioc || []).map(i => `<span style="font-family:monospace;font-size:11px;background:var(--bg);border:1px solid var(--line);border-radius:4px;padding:2px 7px;color:#E24B4A">${i}</span>`).join(' ');
+  const accionesHTML = (r.acciones || []).map((a, i) => `<div style="display:flex;gap:8px;padding:8px 0;border-bottom:1px solid var(--line);font-size:12px"><span style="background:var(--brand);color:#fff;width:18px;height:18px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;flex-shrink:0">${i+1}</span><span style="color:var(--text)">${a}</span></div>`).join('');
+
+  document.getElementById('socOutput').innerHTML =
+   `<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px">
+    <div style="background:${sevBg};border-radius:8px;padding:12px"><div style="font-size:10px;color:${sevColor};font-weight:700;text-transform:uppercase;margin-bottom:3px">Amenaza</div><div style="font-size:13px;font-weight:600;color:${sevColor}">${r.amenaza}</div></div>
+    <div style="background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:12px"><div style="font-size:10px;color:var(--muted);font-weight:700;text-transform:uppercase;margin-bottom:3px">Severidad · Confianza</div><div style="font-size:13px;font-weight:700;color:${sevColor}">${r.severidad}</div><div style="font-size:11px;color:var(--muted)">${r.confianza}% confianza</div></div>
+   </div>
+   <div style="background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:12px;margin-bottom:10px"><div style="font-size:10px;font-weight:700;text-transform:uppercase;color:var(--muted);margin-bottom:6px">MITRE ATT&CK</div><div style="font-size:12px;font-weight:600">${r.mitre_tecnica}</div></div>
+   ${r.ioc && r.ioc.length ? `<div style="margin-bottom:10px"><div style="font-size:10px;font-weight:700;text-transform:uppercase;color:var(--muted);margin-bottom:6px">IOCs detectados</div><div style="display:flex;gap:6px;flex-wrap:wrap">${iocHTML}</div></div>` : ''}
+   <div style="margin-bottom:10px"><div style="font-size:10px;font-weight:700;text-transform:uppercase;color:var(--muted);margin-bottom:6px">Acciones recomendadas</div>${accionesHTML}</div>
+   <div style="font-size:13px;color:var(--muted);line-height:1.6">${r.explicacion}</div>`;
+
+  consumeCredit();
+  toast('✅ Análisis SOC completado');
+
+ } catch(e){
+  document.getElementById('socOutput').innerHTML = '<span style="color:#E24B4A">Error: ' + e.message + '</span>';
+ }
+}
+</script>
+</body>
+</html>
