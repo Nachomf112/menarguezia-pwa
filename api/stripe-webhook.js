@@ -1,6 +1,8 @@
 // ════════════════════════════════════════════════════════════════
-// api/stripe-webhook.js — Menarguez-IA Solutions v5
+// api/stripe-webhook.js — Menarguez-IA Solutions v4
 // ════════════════════════════════════════════════════════════════
+
+import Stripe from 'stripe';
 
 export const config = { api: { bodyParser: false } };
 
@@ -26,61 +28,6 @@ async function getRawBody(req) {
   });
 }
 
-async function computeHMAC(secret, payload) {
-  // Elimina prefijo whsec_
-  const secretClean = secret.startsWith('whsec_') ? secret.slice(6) : secret;
-
-  let keyBytes;
-  // Si es hex puro (64+ chars, solo 0-9a-f) → decodifica como hex
-  // Si no → decodifica como base64
-  if (/^[0-9a-f]{40,}$/i.test(secretClean)) {
-    keyBytes = Buffer.from(secretClean, 'hex');
-  } else {
-    keyBytes = Buffer.from(secretClean, 'base64');
-  }
-
-  const encoder = new TextEncoder();
-  const key = await crypto.subtle.importKey(
-    'raw', keyBytes,
-    { name: 'HMAC', hash: 'SHA-256' },
-    false, ['sign']
-  );
-  const sig_buffer = await crypto.subtle.sign('HMAC', key, encoder.encode(payload));
-  return Array.from(new Uint8Array(sig_buffer))
-    .map(b => b.toString(16).padStart(2, '0')).join('');
-}
-
-async function verificarFirmaStripe(rawBody, sig) {
-  try {
-    const parts = sig.split(',').reduce((acc, part) => {
-      const [k, ...v] = part.split('=');
-      acc[k] = v.join('=');
-      return acc;
-    }, {});
-
-    const timestamp = parts['t'];
-    const v1 = parts['v1'];
-    if (!timestamp || !v1) return false;
-
-    const payload = `${timestamp}.${rawBody.toString()}`;
-
-    const secretos = [
-      process.env.STRIPE_WEBHOOK_SECRET,
-      process.env.STRIPE_WEBHOOK_SECRET_TEST
-    ].filter(Boolean);
-
-    for (const s of secretos) {
-      const computed = await computeHMAC(s, payload);
-      if (computed === v1) return true;
-    }
-
-    return false;
-  } catch (e) {
-    console.error('Error verificando firma:', e.message);
-    return false;
-  }
-}
-
 const MAKE_WEBHOOK = 'https://hook.eu2.make.com/9equz6x2exk8phqz1vjyzwy75zy7z6y6';
 
 export default async function handler(req, res) {
@@ -89,23 +36,29 @@ export default async function handler(req, res) {
   const rawBody = await getRawBody(req);
   const sig = req.headers['stripe-signature'];
 
-  const secretLive = process.env.STRIPE_WEBHOOK_SECRET;
-  const secretTest = process.env.STRIPE_WEBHOOK_SECRET_TEST;
+  const secretos = [
+    process.env.STRIPE_WEBHOOK_SECRET,
+    process.env.STRIPE_WEBHOOK_SECRET_TEST
+  ].filter(Boolean);
 
-  if (!sig || (!secretLive && !secretTest)) {
+  if (!sig || secretos.length === 0) {
     return res.status(400).json({ error: 'Falta firma o secreto' });
   }
 
-  const firmaValida = await verificarFirmaStripe(rawBody, sig);
-  if (!firmaValida) {
-    return res.status(400).json({ error: 'Firma inválida' });
+  // Verificar firma con librería oficial de Stripe
+  const stripe = new Stripe('sk_test_dummy', { apiVersion: '2025-11-17.clover' });
+  let event = null;
+  for (const secret of secretos) {
+    try {
+      event = stripe.webhooks.constructEvent(rawBody, sig, secret);
+      break;
+    } catch (e) {
+      // Intenta con el siguiente secreto
+    }
   }
 
-  let event;
-  try {
-    event = JSON.parse(rawBody.toString());
-  } catch (e) {
-    return res.status(400).json({ error: 'JSON inválido' });
+  if (!event) {
+    return res.status(400).json({ error: 'Firma inválida' });
   }
 
   if (event.type !== 'checkout.session.completed') {
