@@ -1,5 +1,5 @@
 // ════════════════════════════════════════════════════════════════
-// api/stripe-webhook.js — Menarguez-IA Solutions v2
+// api/stripe-webhook.js — Menarguez-IA Solutions v3
 // ════════════════════════════════════════════════════════════════
 
 export const config = { api: { bodyParser: false } };
@@ -26,7 +26,7 @@ async function getRawBody(req) {
   });
 }
 
-async function verificarFirmaStripe(rawBody, sig, secret) {
+async function verificarFirmaStripe(rawBody, sig) {
   try {
     const parts = sig.split(',').reduce((acc, part) => {
       const [k, ...v] = part.split('=');
@@ -54,13 +54,15 @@ async function verificarFirmaStripe(rawBody, sig, secret) {
         .map(b => b.toString(16).padStart(2, '0')).join('');
     }
 
-    const computed = await computeSig(secret);
-    if (computed === v1) return true;
+    // Prueba todos los secretos disponibles (live + test)
+    const secretos = [
+      process.env.STRIPE_WEBHOOK_SECRET,
+      process.env.STRIPE_WEBHOOK_SECRET_TEST
+    ].filter(Boolean);
 
-    const secretTest = process.env.STRIPE_WEBHOOK_SECRET_TEST;
-    if (secretTest) {
-      const computedTest = await computeSig(secretTest);
-      if (computedTest === v1) return true;
+    for (const s of secretos) {
+      const computed = await computeSig(s);
+      if (computed === v1) return true;
     }
 
     return false;
@@ -77,13 +79,15 @@ export default async function handler(req, res) {
 
   const rawBody = await getRawBody(req);
   const sig = req.headers['stripe-signature'];
-  const secret = process.env.STRIPE_WEBHOOK_SECRET;
 
-  if (!sig || !secret) {
+  const secretLive = process.env.STRIPE_WEBHOOK_SECRET;
+  const secretTest = process.env.STRIPE_WEBHOOK_SECRET_TEST;
+
+  if (!sig || (!secretLive && !secretTest)) {
     return res.status(400).json({ error: 'Falta firma o secreto' });
   }
 
-  const firmaValida = await verificarFirmaStripe(rawBody, sig, secret);
+  const firmaValida = await verificarFirmaStripe(rawBody, sig);
   if (!firmaValida) {
     console.error('Firma Stripe inválida');
     return res.status(400).json({ error: 'Firma inválida' });
