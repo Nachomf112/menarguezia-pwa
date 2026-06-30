@@ -1747,7 +1747,7 @@ async function runHumanizer(){if(!checkUsos()) return;
   const resp = await fetch('/api/analyze', {
    method: 'POST',
    headers: {'Content-Type':'application/json'},
-   body: JSON.stringify({model:'claude-sonnet-4-20250514', max_tokens:1000, messages:[{role:'user',content:prompt}]})
+   body: JSON.stringify({model:'claude-sonnet-4-6', max_tokens:1000, messages:[{role:'user',content:prompt}]})
   });
 
   const data = await resp.json();
@@ -1832,7 +1832,7 @@ async function runReputation(){if(!checkUsos()) return;
  $('reputationOutput').innerHTML='<div style="display:flex;align-items:center;gap:10px;color:var(--muted);padding:8px 0"><span style="display:inline-block;width:14px;height:14px;border:2px solid var(--brand2);border-top-color:transparent;border-radius:50%;animation:spin .7s linear infinite"></span> Analizando reputación...</div>';
  try {
   const prompt = 'Eres un experto en gestión de reputación online y crisis de comunicación. Analiza el siguiente comentario o reseña.\n\nCOMENTARIO:\n' + txt + '\n\nResponde ÚNICAMENTE con JSON válido sin markdown:\n{"riesgo":"ALTO"|"MEDIO"|"BAJO","sentimiento":"muy negativo"|"negativo"|"neutro"|"positivo","es_fake":true|false,"urgencia":"inmediata"|"alta"|"media"|"baja","senales":["señal 1","señal 2","señal 3"],"respuesta_sugerida":"respuesta pública profesional y empática max 200 chars","accion_interna":"acción interna recomendada max 100 chars","resumen":"análisis en 2 frases"}';
-  const resp = await fetch('/api/analyze',{method:'POST',headers:{'Content-Type':'application/json'},body:analyzeBody({model:'claude-sonnet-4-20250514',max_tokens:600,messages:[{role:'user',content:prompt}]}, 'reputation')});
+  const resp = await fetch('/api/analyze',{method:'POST',headers:{'Content-Type':'application/json'},body:analyzeBody({model:'claude-sonnet-4-6',max_tokens:600,messages:[{role:'user',content:prompt}]}, 'reputation')});
   const data = await resp.json();
   if(resp.status===429){$('reputationOutput').innerHTML='<div style="background:#FAEEDA;border:1px solid #EF9F27;border-radius:8px;padding:14px;color:#633806;font-size:13px">'+data.message+'</div>';return;}
   const raw = data.content.map(function(i){return i.text||'';}).join('').replace(/```json|```/g,'').trim();
@@ -1870,7 +1870,7 @@ async function runSOC(){if(!checkUsos()) return;
  $('socOutput').innerHTML='<div style="display:flex;align-items:center;gap:10px;color:var(--muted);padding:8px 0"><span style="display:inline-block;width:14px;height:14px;border:2px solid var(--brand2);border-top-color:transparent;border-radius:50%;animation:spin .7s linear infinite"></span> Analizando logs...</div>';
  try {
   const prompt = 'Eres un analista SOC / Blue Team experto en ciberseguridad. Analiza el siguiente log o evento de seguridad.\n\nLOG:\n' + txt + '\n\nResponde ÚNICAMENTE con JSON válido sin markdown:\n{"amenaza":"nombre de la amenaza","severidad":"CRITICA"|"ALTA"|"MEDIA"|"BAJA","mitre_tecnica":"ID y nombre MITRE ATT&CK","ioc":["ioc1","ioc2"],"acciones":["accion1","accion2","accion3"],"explicacion":"explicación técnica en 2 frases","falso_positivo":true|false,"confianza":numero 0-100}';
-  const resp = await fetch('/api/analyze',{method:'POST',headers:{'Content-Type':'application/json'},body:analyzeBody({model:'claude-sonnet-4-20250514',max_tokens:600,messages:[{role:'user',content:prompt}]}, 'soc')});
+  const resp = await fetch('/api/analyze',{method:'POST',headers:{'Content-Type':'application/json'},body:analyzeBody({model:'claude-sonnet-4-6',max_tokens:600,messages:[{role:'user',content:prompt}]}, 'soc')});
   const data = await resp.json();
   if(resp.status===429){$('socOutput').innerHTML='<div style="background:#FAEEDA;border:1px solid #EF9F27;border-radius:8px;padding:14px;color:#633806;font-size:13px">'+data.message+'</div>';return;}
   const raw = data.content.map(function(i){return i.text||'';}).join('').replace(/```json|```/g,'').trim();
@@ -1909,7 +1909,7 @@ async function runCompliance(){if(!checkUsos()) return;
  $('complianceOutput').innerHTML='<div style="display:flex;align-items:center;gap:10px;color:var(--muted);padding:8px 0"><span style="display:inline-block;width:14px;height:14px;border:2px solid var(--brand2);border-top-color:transparent;border-radius:50%;animation:spin .7s linear infinite"></span> Evaluando compliance...</div>';
  try {
   const prompt = 'Eres un experto en cumplimiento normativo de IA, RGPD, Ley de IA de la UE y protección de datos. Evalúa el siguiente caso de uso de IA.\n\nCASO DE USO:\n' + txt + '\n\nResponde ÚNICAMENTE con JSON válido sin markdown:\n{"riesgo_rgpd":"ALTO"|"MEDIO"|"BAJO","riesgo_ley_ia":"ALTO"|"MEDIO"|"BAJO"|"NO APLICA","base_legal":"base legal recomendada","datos_personales":true|false,"requiere_dpia":true|false,"recomendaciones":["rec1","rec2","rec3","rec4"],"semaforo":"VERDE"|"AMARILLO"|"ROJO","resumen":"evaluación en 2-3 frases con los puntos críticos"}';
-  const resp = await fetch('/api/analyze',{method:'POST',headers:{'Content-Type':'application/json'},body:analyzeBody({model:'claude-sonnet-4-20250514',max_tokens:600,messages:[{role:'user',content:prompt}]}, 'compliance')});
+  const resp = await fetch('/api/analyze',{method:'POST',headers:{'Content-Type':'application/json'},body:analyzeBody({model:'claude-sonnet-4-6',max_tokens:600,messages:[{role:'user',content:prompt}]}, 'compliance')});
   const data = await resp.json();
   if(resp.status===429){$('complianceOutput').innerHTML='<div style="background:#FAEEDA;border:1px solid #EF9F27;border-radius:8px;padding:14px;color:#633806;font-size:13px">'+data.message+'</div>';return;}
   const raw = data.content.map(function(i){return i.text||'';}).join('').replace(/```json|```/g,'').trim();
