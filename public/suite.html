@@ -1803,7 +1803,7 @@ async function runLinkedin(){if(!checkUsos()) return;
  $('linkedinOutput').innerHTML='<div style="display:flex;align-items:center;gap:10px;color:var(--muted);padding:8px 0"><span style="display:inline-block;width:14px;height:14px;border:2px solid var(--brand2);border-top-color:transparent;border-radius:50%;animation:spin .7s linear infinite"></span> Generando post...</div>';
  try {
   const prompt = 'Eres un experto en LinkedIn con miles de seguidores. Convierte la siguiente idea en un post viral de LinkedIn en español.\n\nREGLAS:\n- Empieza con un gancho potente en la primera línea\n- Usa saltos de línea cortos para facilitar la lectura en móvil\n- Añade entre 3 y 5 emojis relevantes\n- Incluye entre 3 y 5 hashtags al final\n- Tono auténtico y personal, no corporativo\n- Máximo 1300 caracteres\n- Incluye al final un comentario de primer comentario para aumentar el alcance\n\nIDEA:\n' + txt + '\n\nResponde ÚNICAMENTE con el post listo para publicar, sin explicaciones.';
-  const resp = await fetch('/api/analyze',{method:'POST',headers:{'Content-Type':'application/json'},body:analyzeBody({model:'claude-sonnet-4-20250514',max_tokens:800,messages:[{role:'user',content:prompt}]}, 'linkedin')});
+  const resp = await fetch('/api/analyze',{method:'POST',headers:{'Content-Type':'application/json'},body:analyzeBody({model:'claude-sonnet-4-6',max_tokens:800,messages:[{role:'user',content:prompt}]}, 'linkedin')});
   const data = await resp.json();
   if(resp.status===429){$('linkedinOutput').innerHTML='<div style="background:#FAEEDA;border:1px solid #EF9F27;border-radius:8px;padding:14px;color:#633806;font-size:13px">'+data.message+'</div>';return;}
   const post = data.content.map(function(i){return i.text||'';}).join('').trim();
