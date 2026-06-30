@@ -1645,7 +1645,7 @@ async function runDetector(){
    + '{"nombre":"nombre corto","nivel":"alto"|"medio"|"bajo","descripcion":"max 65 chars","es_humano":true|false},'
    + '{"nombre":"nombre corto","nivel":"alto"|"medio"|"bajo","descripcion":"max 65 chars","es_humano":true|false}],'
    + '"temperatura_humana":numero 0-100,"recomendacion":"frase directa max 80 chars","resumen":"analisis matizado en 2-3 frases mencionando los factores mas determinantes y por que se descarta o confirma la escritura humana"}';
-  const resp = await fetch('/api/analyze',{method:'POST',headers:{'Content-Type':'application/json'},body:analyzeBody({model:'claude-sonnet-4-20250514',max_tokens:1000,messages:[{role:'user',content:prompt}]}, 'detector')});
+  const resp = await fetch('/api/analyze',{method:'POST',headers:{'Content-Type':'application/json'},body:analyzeBody({model:'claude-sonnet-4-6',max_tokens:1000,messages:[{role:'user',content:prompt}]}, 'detector')});
   const data = await resp.json();
 
   if(resp.status === 429) {
