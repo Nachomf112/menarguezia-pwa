@@ -1006,7 +1006,7 @@ if(typeof pdfjsLib !== 'undefined') pdfjsLib.GlobalWorkerOptions.workerSrc = 'ht
     </div>
     <div class="output" id="cvStatus">Elige un archivo para empezar.</div>
     <textarea id="cvOut" readonly style="display:none;margin-top:12px;min-height:260px;font-family:'Geist Mono',ui-monospace,monospace;font-size:13px"></textarea>
-    <p class="cv-note">PDF a Markdown funciona con PDFs que tienen texto (no escaneados) y conserva títulos, párrafos y listas; las tablas y las columnas múltiples no se reconstruyen. Las imágenes de Word se omiten al pasar a Markdown. Para obtener un PDF se usa el diálogo de impresión del navegador (“Guardar como PDF”).</p>
+    <p class="cv-note">PDF a Word o Markdown funciona con PDFs que tienen texto (no escaneados): rehace títulos, párrafos, listas y tablas sencillas como texto editable, pero no conserva el diseño original, las imágenes ni las columnas múltiples. Las imágenes de Word se omiten al pasar a Markdown. Para obtener un PDF se usa el diálogo de impresión del navegador (“Guardar como PDF”).</p>
    </section>
 
    <section id="workflow" class="module panel">
@@ -2237,7 +2237,7 @@ var CV_LIBS = {
 var CV_TARGETS = {
  docx:[['md','Markdown (.md)'],['html','HTML (.html)'],['txt','Texto (.txt)']],
  md:[['docx','Word (.docx)'],['pdf','PDF (imprimir / guardar como PDF)'],['html','HTML (.html)']],
- pdf:[['md','Markdown (.md)'],['txt','Texto (.txt)']]
+ pdf:[['docx','Word (.docx) · texto editable'],['md','Markdown (.md)'],['txt','Texto (.txt)']]
 };
 
 var cvState = {file:null, kind:null, result:null};
@@ -2467,9 +2467,10 @@ function cvPrint(html, win){
 
 /* ---------- Markdown -> Word ---------- */
 
-function cvMdToDocx(md){
+function cvMdToDocx(md){ return cvTokensToDocx(marked.lexer(md)); }
+
+function cvTokensToDocx(tokens){
  var D = window.docx;
- var tokens = marked.lexer(md);
  var listInst = 0;
  var FONT = 'Calibri';
 
@@ -2781,12 +2782,43 @@ function cvBlocksToText(blocks, md){
  return out.trim() + '\n';
 }
 
-async function cvPdfConvert(buf, toMd){
+async function cvPdfGetBlocks(buf){
  var pages = await cvPdfLines(buf);
  var n = 0;
  pages.forEach(function(pg){ n += pg.lines.length; });
  if(!n) throw new Error('El PDF no tiene texto seleccionable (puede estar escaneado). Aquí no hay OCR.');
- return cvBlocksToText(cvPdfBlocks(pages), toMd);
+ return cvPdfBlocks(pages);
+}
+
+async function cvPdfConvert(buf, toMd){
+ return cvBlocksToText(await cvPdfGetBlocks(buf), toMd);
+}
+
+// Bloques del PDF -> tokens con la forma de marked, para reutilizar el generador de Word
+function cvBlocksToTokens(blocks){
+ function inl(t){ return [{type:'text', text:cvEsc(t)}]; }
+ var tokens = [], i = 0;
+ while(i < blocks.length){
+  var b = blocks[i];
+  if(b.kind === 'h'){
+   tokens.push({type:'heading', depth:Math.min(b.level || 1, 6), tokens:inl(b.text)}); i++;
+  } else if(b.kind === 'table'){
+   var n = b.rows.reduce(function(m, r){ return Math.max(m, r.length); }, 1);
+   var rows = b.rows.map(function(r){ r = r.slice(); while(r.length < n) r.push(''); return r.map(function(c){ return {tokens:inl(c)}; }); });
+   tokens.push({type:'table', header:rows[0], rows:rows.slice(1)}); i++;
+  } else if(b.kind === 'li'){
+   var ordered = /^\d{1,3}[.)]\s/.test(b.text);
+   var items = [];
+   while(i < blocks.length && blocks[i].kind === 'li' && /^\d{1,3}[.)]\s/.test(blocks[i].text) === ordered){
+    items.push({tokens:[{type:'text', tokens:inl(blocks[i].text.replace(/^(-|\d{1,3}[.)])\s+/, ''))}]});
+    i++;
+   }
+   tokens.push({type:'list', ordered:ordered, items:items});
+  } else {
+   tokens.push({type:'paragraph', tokens:inl(b.text)}); i++;
+  }
+ }
+ return tokens;
 }
 
 /* ---------- accion principal ---------- */
@@ -2843,6 +2875,15 @@ async function cvConvert(){
    var blob = await cvMdToDocx(mdText);
    cvState.result = {blob: blob, name: base + '.docx'};
    cvStatus('Documento Word generado (' + cvSize(blob.size) + '). Pulsa Descargar.');
+   $('cvOut').style.display = 'none';
+   $('cvDl').disabled = false;
+   return;
+  } else if(kind === 'pdf' && to === 'docx'){
+   await cvLoad(['docx']);
+   var pblocks = await cvPdfGetBlocks(buf);
+   var pblob = await cvTokensToDocx(cvBlocksToTokens(pblocks));
+   cvState.result = {blob: pblob, name: base + '.docx'};
+   cvStatus('Documento Word generado (' + cvSize(pblob.size) + '). Es texto editable: el diseño original del PDF no se conserva. Pulsa Descargar.');
    $('cvOut').style.display = 'none';
    $('cvDl').disabled = false;
    return;
