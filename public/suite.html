@@ -1006,7 +1006,7 @@ if(typeof pdfjsLib !== 'undefined') pdfjsLib.GlobalWorkerOptions.workerSrc = 'ht
     </div>
     <div class="output" id="cvStatus">Elige un archivo para empezar.</div>
     <textarea id="cvOut" readonly style="display:none;margin-top:12px;min-height:260px;font-family:'Geist Mono',ui-monospace,monospace;font-size:13px"></textarea>
-    <p class="cv-note">PDF a Word o Markdown funciona con PDFs que tienen texto (no escaneados): rehace títulos, párrafos, listas y tablas sencillas como texto editable, pero no conserva el diseño original, las imágenes ni las columnas múltiples. Las imágenes de Word se omiten al pasar a Markdown. Para obtener un PDF se usa el diálogo de impresión del navegador (“Guardar como PDF”).</p>
+    <p class="cv-note">PDF a Word o Markdown funciona con PDFs que tienen texto (no escaneados): rehace títulos, párrafos, listas y tablas sencillas como texto editable, pero no conserva el diseño original, las imágenes ni las columnas múltiples. Las imágenes de Word se omiten al pasar a Markdown. Excel recoge solo las tablas (una por hoja) y convierte a número lo que claramente lo es. Para obtener un PDF se usa el diálogo de impresión del navegador (“Guardar como PDF”).</p>
    </section>
 
    <section id="workflow" class="module panel">
@@ -2231,13 +2231,14 @@ var CV_LIBS = {
  turndown:{src:'https://cdn.jsdelivr.net/npm/turndown@7.2.0/dist/turndown.js',sri:'sha384-OGauEFaI5hnS8jXK4qdSGShAUAObMBKoLXgcL1ORhRh7ulx5jPZH35qVpacIEA4Z',ok:function(){return window.TurndownService;}},
  marked:{src:'https://cdn.jsdelivr.net/npm/marked@12.0.2/marked.min.js',sri:'sha384-/TQbtLCAerC3jgaim+N78RZSDYV7ryeoBCVqTuzRrFec2akfBkHS7ACQ3PQhvMVi',ok:function(){return window.marked;}},
  purify:{src:'https://cdn.jsdelivr.net/npm/dompurify@3.1.6/dist/purify.min.js',sri:'sha384-+VfUPEb0PdtChMwmBcBmykRMDd+v6D/oFmB3rZM/puCMDYcIvF968OimRh4KQY9a',ok:function(){return window.DOMPurify;}},
+ xlsx:{src:'https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js',sri:'sha384-vtjasyidUo0kW94K5MXDXntzOJpQgBKXmE7e2Ga4LG0skTTLeBi97eFAXsqewJjw',ok:function(){return window.XLSX;}},
  docx:{src:'https://cdn.jsdelivr.net/npm/docx@8.5.0/build/index.umd.js',sri:'sha384-4xaIisuLEy2lo2HkB2C4rEf7v8jbTb2kuogX6TkuEt9feTWKBSFSOzsqNNbV+sKh',ok:function(){return window.docx;}}
 };
 
 var CV_TARGETS = {
- docx:[['md','Markdown (.md)'],['html','HTML (.html)'],['txt','Texto (.txt)']],
- md:[['docx','Word (.docx)'],['pdf','PDF (imprimir / guardar como PDF)'],['html','HTML (.html)']],
- pdf:[['docx','Word (.docx) · texto editable'],['md','Markdown (.md)'],['txt','Texto (.txt)']]
+ docx:[['md','Markdown (.md)'],['html','HTML (.html)'],['txt','Texto (.txt)'],['xlsx','Excel (.xlsx) · solo las tablas']],
+ md:[['docx','Word (.docx)'],['pdf','PDF (imprimir / guardar como PDF)'],['html','HTML (.html)'],['xlsx','Excel (.xlsx) · solo las tablas']],
+ pdf:[['docx','Word (.docx) · texto editable'],['md','Markdown (.md)'],['txt','Texto (.txt)'],['xlsx','Excel (.xlsx) · solo las tablas']]
 };
 
 var cvState = {file:null, kind:null, result:null};
@@ -2821,6 +2822,94 @@ function cvBlocksToTokens(blocks){
  return tokens;
 }
 
+/* ---------- Tablas -> Excel ---------- */
+
+function cvTokText(toks){
+ var o = '';
+ (toks || []).forEach(function(t){
+  if(t.tokens && t.tokens.length) o += cvTokText(t.tokens);
+  else if(t.type === 'br') o += ' ';
+  else if(t.text) o += cvUnesc(t.text);
+ });
+ return o;
+}
+
+function cvMdTables(md){
+ var out = [];
+ (function walk(toks){
+  (toks || []).forEach(function(t){
+   if(t.type === 'table'){
+    var rows = [t.header.map(function(c){ return cvTokText(c.tokens).trim(); })];
+    t.rows.forEach(function(r){ rows.push(r.map(function(c){ return cvTokText(c.tokens).trim(); })); });
+    out.push(rows);
+   } else {
+    if(t.tokens) walk(t.tokens);
+    if(t.items) t.items.forEach(function(it){ walk(it.tokens); });
+   }
+  });
+ })(marked.lexer(md));
+ return out;
+}
+
+function cvHtmlTables(html){
+ var d = new DOMParser().parseFromString(html, 'text/html');
+ var out = [];
+ d.querySelectorAll('table').forEach(function(tb){
+  var rows = [];
+  for(var i = 0; i < tb.rows.length; i++){
+   var r = [];
+   for(var j = 0; j < tb.rows[i].cells.length; j++) r.push(tb.rows[i].cells[j].textContent.replace(/\s+/g, ' ').trim());
+   rows.push(r);
+  }
+  if(rows.length) out.push(rows);
+ });
+ return out;
+}
+
+function cvBlocksTables(blocks){
+ return blocks.filter(function(b){ return b.kind === 'table'; }).map(function(b){ return b.rows; });
+}
+
+// Convierte a numero lo que claramente lo es (1.234,56 / 12,5 / 1514); respeta codigos con ceros a la izquierda
+function cvCell(v){
+ if(v === undefined || v === null) return '';
+ var t = String(v).trim();
+ if(!t) return '';
+ if(/^-?(0|[1-9]\d{0,14})$/.test(t)) return Number(t);
+ if(/^-?\d{1,3}(\.\d{3})+(,\d+)?$/.test(t)) return Number(t.replace(/\./g, '').replace(',', '.'));
+ if(/^-?(0|[1-9]\d*),\d+$/.test(t)) return Number(t.replace(',', '.'));
+ if(/^-?(0|[1-9]\d*)\.\d+$/.test(t)) return Number(t);
+ return t;
+}
+
+function cvTablesToXlsx(tables){
+ var wb = XLSX.utils.book_new();
+ tables.forEach(function(rows, i){
+  var data = rows.map(function(r){ return r.map(cvCell); });
+  var ws = XLSX.utils.aoa_to_sheet(data);
+  var n = data.reduce(function(m, r){ return Math.max(m, r.length); }, 0), cols = [];
+  for(var c = 0; c < n; c++){
+   var w = 8;
+   data.forEach(function(r){ if(r[c] !== undefined && r[c] !== '') w = Math.max(w, String(r[c]).length + 2); });
+   cols.push({wch: Math.min(w, 60)});
+  }
+  ws['!cols'] = cols;
+  XLSX.utils.book_append_sheet(wb, ws, 'Tabla ' + (i + 1));
+ });
+ var arr = XLSX.write(wb, {bookType:'xlsx', type:'array'});
+ return new Blob([arr], {type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
+}
+
+async function cvToXlsx(kind, buf, mdText){
+ await cvLoad(['xlsx']);
+ var tables;
+ if(kind === 'docx') tables = cvHtmlTables(await cvDocxToHtml(buf, false));
+ else if(kind === 'md'){ await cvLoad(['marked']); tables = cvMdTables(mdText); }
+ else tables = cvBlocksTables(await cvPdfGetBlocks(buf));
+ if(!tables.length) throw new Error('No se han detectado tablas en el documento.');
+ return {blob: cvTablesToXlsx(tables), n: tables.length};
+}
+
 /* ---------- accion principal ---------- */
 
 async function cvConvert(){
@@ -2849,7 +2938,14 @@ async function cvConvert(){
   if(kind === 'md' && !mdText.trim()) throw new Error('El texto está vacío.');
   var res = null;
 
-  if(kind === 'docx' && to === 'md'){
+  if(to === 'xlsx'){
+   var xr = await cvToXlsx(kind, buf, mdText);
+   cvState.result = {blob: xr.blob, name: base + '.xlsx'};
+   cvStatus('Excel generado: ' + xr.n + (xr.n === 1 ? ' tabla' : ' tablas') + ' (una por hoja, ' + cvSize(xr.blob.size) + '). Pulsa Descargar.');
+   $('cvOut').style.display = 'none';
+   $('cvDl').disabled = false;
+   return;
+  } else if(kind === 'docx' && to === 'md'){
    res = {text: await cvDocxToMd(buf), name: base + '.md', mime:'text/markdown'};
   } else if(kind === 'docx' && to === 'txt'){
    res = {text: await cvDocxToTxt(buf), name: base + '.txt', mime:'text/plain'};
