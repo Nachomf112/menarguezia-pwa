@@ -2629,6 +2629,144 @@ function cvTokensToDocx(tokens){
 
 /* ---------- PDF -> Markdown / texto ---------- */
 
+/* ---------- PDF: tablas con celdas dibujadas (rejilla) ---------- */
+
+// Lee los rectangulos dibujados en la pagina (con su matriz de transformacion)
+async function cvPdfRects(page){
+ if(typeof pdfjsLib === 'undefined' || !pdfjsLib.OPS) return [];
+ var O = pdfjsLib.OPS, ol;
+ try{ ol = await page.getOperatorList(); }catch(e){ return []; }
+ function mul(a, b){ return [a[0]*b[0]+a[2]*b[1], a[1]*b[0]+a[3]*b[1], a[0]*b[2]+a[2]*b[3], a[1]*b[2]+a[3]*b[3], a[0]*b[4]+a[2]*b[5]+a[4], a[1]*b[4]+a[3]*b[5]+a[5]]; }
+ var m = [1,0,0,1,0,0], st = [], rects = [];
+ for(var i = 0; i < ol.fnArray.length; i++){
+  var f = ol.fnArray[i], a = ol.argsArray[i];
+  if(f === O.save) st.push(m);
+  else if(f === O.restore){ if(st.length) m = st.pop(); }
+  else if(f === O.transform) m = mul(m, a);
+  else if(f === O.constructPath){
+   var ops = a[0], c = a[1], k = 0;
+   for(var j = 0; j < ops.length; j++){
+    var o = ops[j];
+    if(o === O.rectangle){
+     var x = c[k], y = c[k+1], w = c[k+2], h = c[k+3]; k += 4;
+     var x1 = m[0]*x + m[2]*y + m[4], y1 = m[1]*x + m[3]*y + m[5];
+     var x2 = m[0]*(x+w) + m[2]*(y+h) + m[4], y2 = m[1]*(x+w) + m[3]*(y+h) + m[5];
+     rects.push({x:Math.min(x1, x2), y:Math.min(y1, y2), w:Math.abs(x2 - x1), h:Math.abs(y2 - y1)});
+    } else if(o === O.moveTo || o === O.lineTo) k += 2;
+    else if(o === O.curveTo) k += 6;
+    else if(o === O.curveTo2 || o === O.curveTo3) k += 4;
+   }
+  }
+ }
+ // quitar duplicados
+ var seen = {}, out = [];
+ rects.forEach(function(r){
+  var key = [r.x, r.y, r.w, r.h].map(function(v){ return Math.round(v * 2); }).join('|');
+  if(!seen[key]){ seen[key] = 1; out.push(r); }
+ });
+ return out;
+}
+
+function cvAnchor(it){ return it.rot ? {x:it.x, y:it.y} : {x:it.x + it.w / 2, y:it.y + it.h * 0.3}; }
+function cvIn(pt, r, pad){ pad = pad || 0; return pt.x >= r.x - pad && pt.x <= r.x + r.w + pad && pt.y >= r.y - pad && pt.y <= r.y + r.h + pad; }
+
+// Reconstruye una tabla a partir de las celdas dibujadas. Devuelve null si la pagina no tiene una rejilla clara.
+function cvPdfGrid(rects, items){
+ var cells = rects.filter(function(r){ return r.w >= 20 && r.w <= 400 && r.h >= 8 && r.h <= 150; });
+ if(cells.length < 8) return null;
+ // anchura modal de celda
+ var wc = {}, mw = 0, best = 0;
+ cells.forEach(function(r){ var k = Math.round(r.w); wc[k] = (wc[k] || 0) + 1; });
+ Object.keys(wc).forEach(function(k){ if(wc[k] > best){ best = wc[k]; mw = +k; } });
+ cells = cells.filter(function(r){ return Math.abs(r.w - mw) <= 3; });
+ if(cells.length < 8) return null;
+ // filas por centro vertical
+ cells.sort(function(a, b){ return (b.y + b.h / 2) - (a.y + a.h / 2); });
+ var rows = [];
+ cells.forEach(function(r){
+  var cy = r.y + r.h / 2, R = rows[rows.length - 1];
+  if(R && Math.abs(R.cy - cy) <= 3) R.cells.push(r); else rows.push({cy:cy, cells:[r]});
+ });
+ var maxN = 0;
+ rows.forEach(function(R){ maxN = Math.max(maxN, R.cells.length); });
+ if(maxN < 2) return null;
+ rows = rows.filter(function(R){ return R.cells.length >= Math.ceil(maxN * 0.8); });
+ if(rows.length < 3) return null;
+ // columnas
+ var xs = [];
+ rows.forEach(function(R){ R.cells.forEach(function(r){ xs.push(r.x); }); });
+ xs.sort(function(a, b){ return a - b; });
+ var cols = [];
+ xs.forEach(function(x){ var C = cols[cols.length - 1]; if(C && x - C.x <= 3) C.n++; else cols.push({x:x, n:1}); });
+ cols = cols.filter(function(C){ return C.n >= 2; });
+ if(cols.length < 2) return null;
+ var left = Infinity, right = -Infinity, top = -Infinity, bottom = Infinity;
+ rows.forEach(function(R){ R.cells.forEach(function(r){
+  left = Math.min(left, r.x); right = Math.max(right, r.x + r.w); top = Math.max(top, r.y + r.h); bottom = Math.min(bottom, r.y); }); });
+ // filas de una sola celda ancha (p. ej. un plato unico para toda la semana)
+ rects.forEach(function(r){
+  if(r.w < mw * 1.5 || r.w > right - left + 6 || r.h < 15 || r.h > 100) return;
+  if(r.y < bottom - 3 || r.y + r.h > top + 3) return;
+  var cy = r.y + r.h / 2;
+  for(var i = 0; i < rows.length; i++) if(Math.abs(rows[i].cy - cy) <= 3) return;
+  rows.push({cy:cy, cells:[r], span:true});
+ });
+ rows.sort(function(a, b){ return b.cy - a.cy; });
+ // etiquetas laterales (rectangulos estrechos a la izquierda, texto girado)
+ var bands = rects.filter(function(r){ return r.w < 20 && r.h >= 15 && r.x + r.w <= left + 4 && r.y >= bottom - 3 && r.y + r.h <= top + 3; });
+ function bandLabel(b){
+  var its = items.filter(function(it){ return cvIn(cvAnchor(it), b, 2); });
+  its.sort(function(p, q){ return p.rot ? p.y - q.y : q.y - p.y; });
+  return its.map(function(it){
+   var t = it.s.trim();
+   if(/^(\S ){2,}\S$/.test(t)) t = t.replace(/ /g, '');
+   return t;
+  }).join(' ').replace(/\s+/g, ' ').trim();
+ }
+ var labels = bands.map(function(b){ return {y:b.y, h:b.h, text:bandLabel(b)}; }).filter(function(l){ return l.text; });
+ var hasLabel = labels.length > 0;
+ var used = {};
+ var table = rows.map(function(R){
+  var rowRect = {x:left, y:R.cells[0].y, w:right - left, h:R.cells[0].h};
+  var row = [];
+  if(hasLabel){
+   var lab = '';
+   labels.forEach(function(l){ if(R.cy >= l.y && R.cy <= l.y + l.h) lab = l.text; });
+   row.push(lab);
+  }
+  if(R.span){
+   var its = items.filter(function(it){ return !it.rot && cvIn(cvAnchor(it), R.cells[0], 1); });
+   its.forEach(function(it){ used[it.i] = 1; });
+   row.push(cvCellText(its));
+   return row;
+  }
+  cols.forEach(function(C){
+   var rc = null;
+   R.cells.forEach(function(r){ if(Math.abs(r.x - C.x) <= 3) rc = r; });
+   var its = rc ? items.filter(function(it){ return !it.rot && cvIn(cvAnchor(it), rc, 1); }) : [];
+   its.forEach(function(it){ used[it.i] = 1; });
+   row.push(cvCellText(its));
+  });
+  return row;
+ });
+ // descartar si casi no hay texto
+ var filled = 0;
+ table.forEach(function(r){ r.forEach(function(c){ if(c) filled++; }); });
+ if(filled < 4) return null;
+ var inside = {};
+ items.forEach(function(it){
+  var pt = cvAnchor(it);
+  if(pt.x >= left - 14 && pt.x <= right + 3 && pt.y >= bottom && pt.y <= top) inside[it.i] = 1;
+ });
+ return {rows:table, top:top, left:left, inside:inside};
+}
+
+function cvCellText(its){
+ its = its.slice().sort(function(a, b){ return Math.abs(a.y - b.y) > 2 ? b.y - a.y : a.x - b.x; });
+ return its.map(function(it){ return it.s.trim(); }).filter(Boolean).join(' ').replace(/\s+/g, ' ').trim();
+}
+
+
 async function cvPdfLines(buf){
  if(typeof pdfjsLib === 'undefined') throw new Error('PDF.js no disponible. Recarga la página.');
  var pdf = await pdfjsLib.getDocument({data: buf}).promise;
@@ -2642,8 +2780,11 @@ async function cvPdfLines(buf){
   var items = [];
   tc.items.forEach(function(i){
    if(typeof i.str !== 'string' || !i.str.trim()) return;
-   items.push({s:i.str, x:i.transform[4], y:i.transform[5], h:Math.abs(i.transform[3]) || i.height || 10, w:i.width || 0});
+   items.push({s:i.str, x:i.transform[4], y:i.transform[5], h:Math.abs(i.transform[3]) || i.height || 10, w:i.width || 0, rot:Math.abs(i.transform[1]) > 0.01 || Math.abs(i.transform[3]) < 0.01, i:items.length});
   });
+  var grid = null;
+  try{ grid = cvPdfGrid(await cvPdfRects(page), items); }catch(e){ grid = null; }
+  if(grid) items = items.filter(function(it){ return !grid.inside[it.i]; });
   items.sort(function(a, b){ return b.y - a.y; });
   var lines = [];
   items.forEach(function(it){
@@ -2672,6 +2813,10 @@ async function cvPdfLines(buf){
    var text = cells.join(' ');
    if(text) out.push({text:text, cells:cells, y:L.y, size:size, x:L.items[0].x, page:p, top:view[3], bottom:view[1]});
   });
+  if(grid){
+   out.push({text:'', cells:[], y:grid.top, size:0, x:grid.left, page:p, top:view[3], bottom:view[1], grid:grid.rows});
+   out.sort(function(a, b){ return b.y - a.y; });
+  }
   pages.push({lines:out, height:view[3] - view[1]});
  }
  return pages;
@@ -2683,6 +2828,7 @@ function cvPdfBlocks(pages){
  pages.forEach(function(pg){
   var seen = {};
   pg.lines.forEach(function(l){
+   if(l.grid){ l.edge = false; return; }
    var edge = (l.top - l.y) < pg.height * 0.1 || (l.y - l.bottom) < pg.height * 0.1;
    l.edge = edge;
    if(edge){ var k = l.text.replace(/\d+/g, '#'); if(!seen[k]){ seen[k] = 1; freq[k] = (freq[k] || 0) + 1; } }
@@ -2691,7 +2837,7 @@ function cvPdfBlocks(pages){
  var minRep = Math.max(3, Math.ceil(pages.length * 0.5));
  pages.forEach(function(pg){
   pg.lines = pg.lines.filter(function(l){
-   if(!l.edge) return true;
+   if(l.grid || !l.edge) return true;
    if(/^(p[aá]g(ina)?\.?\s*)?\d+(\s*(\/|de|of)\s*\d+)?$/i.test(l.text)) return false;
    var k = l.text.replace(/\d+/g, '#');
    return !(pages.length >= 3 && freq[k] >= minRep);
@@ -2718,6 +2864,7 @@ function cvPdfBlocks(pages){
  pages.forEach(function(pg, pi){
   var prev = null;
   pg.lines.forEach(function(l){
+   if(l.grid){ blocks.push({kind:'table', rows:l.grid}); prev = null; return; }
    var kind = 'p', level = 0, text = l.text;
    if(isHead(l)){ kind = 'h'; level = headLevel(l); }
    else if(l.cells.length > 1){ kind = 'row'; }
