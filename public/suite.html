@@ -2231,7 +2231,7 @@ var CV_LIBS = {
  turndown:{src:'https://cdn.jsdelivr.net/npm/turndown@7.2.0/dist/turndown.js',sri:'sha384-OGauEFaI5hnS8jXK4qdSGShAUAObMBKoLXgcL1ORhRh7ulx5jPZH35qVpacIEA4Z',ok:function(){return window.TurndownService;}},
  marked:{src:'https://cdn.jsdelivr.net/npm/marked@12.0.2/marked.min.js',sri:'sha384-/TQbtLCAerC3jgaim+N78RZSDYV7ryeoBCVqTuzRrFec2akfBkHS7ACQ3PQhvMVi',ok:function(){return window.marked;}},
  purify:{src:'https://cdn.jsdelivr.net/npm/dompurify@3.1.6/dist/purify.min.js',sri:'sha384-+VfUPEb0PdtChMwmBcBmykRMDd+v6D/oFmB3rZM/puCMDYcIvF968OimRh4KQY9a',ok:function(){return window.DOMPurify;}},
- xlsx:{src:'https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js',sri:'sha384-vtjasyidUo0kW94K5MXDXntzOJpQgBKXmE7e2Ga4LG0skTTLeBi97eFAXsqewJjw',ok:function(){return window.XLSX;}},
+ xlsx:{src:'https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.bundle.js',sri:'sha384-OUW9euuUyxyHcAhTqbhI+Iyb8LMssXt/cpz0yXhs9UWG2/R/uaWdakx/4cfww7Vb',ok:function(){return window.XLSX;}},
  docx:{src:'https://cdn.jsdelivr.net/npm/docx@8.5.0/build/index.umd.js',sri:'sha384-4xaIisuLEy2lo2HkB2C4rEf7v8jbTb2kuogX6TkuEt9feTWKBSFSOzsqNNbV+sKh',ok:function(){return window.docx;}}
 };
 
@@ -2637,13 +2637,20 @@ async function cvPdfRects(page){
  var O = pdfjsLib.OPS, ol;
  try{ ol = await page.getOperatorList(); }catch(e){ return []; }
  function mul(a, b){ return [a[0]*b[0]+a[2]*b[1], a[1]*b[0]+a[3]*b[1], a[0]*b[2]+a[2]*b[3], a[1]*b[2]+a[3]*b[3], a[0]*b[4]+a[2]*b[5]+a[4], a[1]*b[4]+a[3]*b[5]+a[5]]; }
- var m = [1,0,0,1,0,0], st = [], rects = [];
+ var m = [1,0,0,1,0,0], st = [], rects = [], fillC = '#000000', fst = [], pend = [];
+ function hex(r, g, b){ return '#' + [r, g, b].map(function(v){ v = Math.max(0, Math.min(255, Math.round(v))); return (v < 16 ? '0' : '') + v.toString(16); }).join(''); }
+ var paint = {}; [O.fill, O.eoFill, O.fillStroke, O.eoFillStroke, O.closeFillStroke, O.closeEOFillStroke].forEach(function(k){ if(k !== undefined) paint[k] = 1; });
  for(var i = 0; i < ol.fnArray.length; i++){
   var f = ol.fnArray[i], a = ol.argsArray[i];
-  if(f === O.save) st.push(m);
-  else if(f === O.restore){ if(st.length) m = st.pop(); }
+  if(paint[f]){ pend.forEach(function(r){ r.fill = fillC; }); pend = []; continue; }
+  if(f !== O.constructPath && pend.length && f !== O.rectangle) pend = [];
+  if(f === O.save){ st.push(m); fst.push(fillC); }
+  else if(f === O.restore){ if(st.length) m = st.pop(); if(fst.length) fillC = fst.pop(); }
   else if(f === O.transform) m = mul(m, a);
+  else if(f === O.setFillRGBColor){ fillC = typeof a[0] === 'string' ? a[0] : hex(a[0], a[1], a[2]); }
+  else if(f === O.setFillGray){ var gv = a[0] <= 1 ? a[0] * 255 : a[0]; fillC = hex(gv, gv, gv); }
   else if(f === O.constructPath){
+   pend = [];
    var ops = a[0], c = a[1], k = 0;
    for(var j = 0; j < ops.length; j++){
     var o = ops[j];
@@ -2651,7 +2658,8 @@ async function cvPdfRects(page){
      var x = c[k], y = c[k+1], w = c[k+2], h = c[k+3]; k += 4;
      var x1 = m[0]*x + m[2]*y + m[4], y1 = m[1]*x + m[3]*y + m[5];
      var x2 = m[0]*(x+w) + m[2]*(y+h) + m[4], y2 = m[1]*(x+w) + m[3]*(y+h) + m[5];
-     rects.push({x:Math.min(x1, x2), y:Math.min(y1, y2), w:Math.abs(x2 - x1), h:Math.abs(y2 - y1)});
+     var rr = {x:Math.min(x1, x2), y:Math.min(y1, y2), w:Math.abs(x2 - x1), h:Math.abs(y2 - y1), fill:null};
+     rects.push(rr); pend.push(rr);
     } else if(o === O.moveTo || o === O.lineTo) k += 2;
     else if(o === O.curveTo) k += 6;
     else if(o === O.curveTo2 || o === O.curveTo3) k += 4;
@@ -2662,7 +2670,8 @@ async function cvPdfRects(page){
  var seen = {}, out = [];
  rects.forEach(function(r){
   var key = [r.x, r.y, r.w, r.h].map(function(v){ return Math.round(v * 2); }).join('|');
-  if(!seen[key]){ seen[key] = 1; out.push(r); }
+  if(!seen[key]){ seen[key] = r; out.push(r); }
+  else if(r.fill && !seen[key].fill) seen[key].fill = r.fill;
  });
  return out;
 }
@@ -2713,7 +2722,7 @@ function cvPdfGrid(rects, items){
  });
  rows.sort(function(a, b){ return b.cy - a.cy; });
  // etiquetas laterales (rectangulos estrechos a la izquierda, texto girado)
- var bands = rects.filter(function(r){ return r.w < 20 && r.h >= 15 && r.x + r.w <= left + 4 && r.y >= bottom - 3 && r.y + r.h <= top + 3; });
+ var bands = rects.filter(function(r){ return r.w < 20 && r.w >= 5 && r.h >= 15 && r.x + r.w <= left + 4 && r.y >= bottom - 3 && r.y + r.h <= top + 3; });
  function bandLabel(b){
   var its = items.filter(function(it){ return cvIn(cvAnchor(it), b, 2); });
   its.sort(function(p, q){ return p.rot ? p.y - q.y : q.y - p.y; });
@@ -2758,7 +2767,157 @@ function cvPdfGrid(rects, items){
   var pt = cvAnchor(it);
   if(pt.x >= left - 14 && pt.x <= right + 3 && pt.y >= bottom && pt.y <= top) inside[it.i] = 1;
  });
- return {rows:table, top:top, left:left, inside:inside};
+ var layout = null;
+ try{ layout = cvGridLayout(rects, items, rows, cols, labels, bands, hasLabel, {left:left, right:right, top:top, bottom:bottom}, inside); }catch(e){ layout = null; }
+ return {rows:table, top:top, left:left, inside:inside, layout:layout};
+}
+
+
+function cvLum(hx){ var n = parseInt(hx.slice(1), 16); return (0.299 * (n >> 16) + 0.587 * ((n >> 8) & 255) + 0.114 * (n & 255)) / 255; }
+
+// Modelo de hoja "fiel al PDF": filas con alto, celdas con color, combinaciones y texto de cabecera/pie
+function cvGridLayout(rects, items, rows, cols, labels, bands, hasLabel, box, inside){
+ var filled = rects.filter(function(r){ return r.fill && cvLum(r.fill) < 0.985 && r.w * r.h < 400000; });
+ function fillAt(x, y){
+  var best = null, area = Infinity;
+  filled.forEach(function(r){ if(x >= r.x && x <= r.x + r.w && y >= r.y && y <= r.y + r.h && r.w * r.h < area){ area = r.w * r.h; best = r.fill; } });
+  return best;
+ }
+ var mw = 0; rows.forEach(function(R){ R.cells.forEach(function(r){ if(!R.span) mw = Math.max(mw, r.w); }); });
+ // columnas de la hoja: [etiqueta] + columnas de datos
+ var colDefs = [];
+ var labX = Infinity;
+ bands.forEach(function(b){ labX = Math.min(labX, b.x); });
+ if(hasLabel) colDefs.push({x:labX, w:Math.max(8, cols[0].x - labX)});
+ cols.forEach(function(C){ colDefs.push({x:C.x, w:mw}); });
+ var off = hasLabel ? 1 : 0, nc = colDefs.length;
+ function colOf(x){
+  var k = 0;
+  for(var i = 0; i < nc; i++){ if(x >= colDefs[i].x - 2) k = i; }
+  return k;
+ }
+ // filas de la rejilla (incluye franjas separadoras de color)
+ var seps = rects.filter(function(r){
+  if(!r.fill || cvLum(r.fill) > 0.97) return false;
+  if(r.w < (box.right - box.left) - 8 || r.w > (box.right - box.left) + 8 || r.h > 15 || r.h < 1.5) return false;
+  if(r.y < box.bottom - 1 || r.y + r.h > box.top + 1) return false;
+  for(var i = 0; i < rows.length; i++){ if(Math.abs(rows[i].cy - (r.y + r.h / 2)) < 3) return false; }
+  return true;
+ });
+ var all = rows.map(function(R){ return {kind:'row', cy:R.cy, h:R.cells[0].h, R:R}; });
+ seps.forEach(function(r){ all.push({kind:'sep', cy:r.y + r.h / 2, h:r.h, fill:r.fill}); });
+ all.sort(function(a, b){ return b.cy - a.cy; });
+
+ function lines(its){
+  its = its.slice().sort(function(a, b){ return b.y - a.y; });
+  var out = [];
+  its.forEach(function(it){
+   var L = out[out.length - 1];
+   if(L && Math.abs(L.y - it.y) <= Math.max(2, L.h * 0.5)) L.items.push(it); else out.push({y:it.y, h:it.h, items:[it]});
+  });
+  return out;
+ }
+ var left = items.filter(function(it){ return !inside[it.i] && !it.rot; });
+ var above = lines(left.filter(function(it){ return it.y > box.top; }));
+ var below = lines(left.filter(function(it){ return it.y < box.bottom; }));
+
+ var aoa = [], styles = [], hts = [], merges = [];
+ var B = {top:{style:'thin', color:{rgb:'000000'}}, bottom:{style:'thin', color:{rgb:'000000'}}, left:{style:'thin', color:{rgb:'000000'}}, right:{style:'thin', color:{rgb:'000000'}}};
+ function blank(){ var a = []; for(var i = 0; i < nc; i++) a.push(''); return a; }
+ function textRow(L, maxBottom){
+  var r = blank(), st = blank(), parts = {};
+  L.items.sort(function(a, b){ return a.x - b.x; }).forEach(function(it){
+   var k = colOf(it.x + it.w / 2);
+   (parts[k] = parts[k] || []).push(it);
+  });
+  Object.keys(parts).forEach(function(k){
+   var ps = parts[k];
+   r[k] = ps.map(function(it){ return it.s.trim(); }).filter(Boolean).join(' ').replace(/\s+/g, ' ');
+   var sz = 0, bold = false; ps.forEach(function(it){ sz = Math.max(sz, it.h); bold = bold || it.bold; });
+   st[k] = {font:{sz:Math.max(8, Math.round(sz)), bold:bold, color:{rgb:'222222'}}, alignment:{horizontal:'center', vertical:'center'}};
+  });
+  aoa.push(r); styles.push(st); hts.push(Math.max(14, L.h * 1.5));
+ }
+ above.forEach(function(L){ textRow(L); });
+ var firstGrid = aoa.length;
+ var bandRows = [];
+ all.forEach(function(g){
+  var ri = aoa.length, r = blank(), st = blank();
+  if(g.kind === 'sep'){
+   for(var i = 0; i < nc; i++) st[i] = {fill:{patternType:'solid', fgColor:{rgb:g.fill.slice(1).toUpperCase()}}};
+   aoa.push(r); styles.push(st); hts.push(Math.max(3, g.h)); return;
+  }
+  var R = g.R;
+  if(R.span){
+   var its = items.filter(function(it){ return !it.rot && cvIn(cvAnchor(it), R.cells[0], 1); });
+   var fl = fillAt(R.cells[0].x + 2, R.cells[0].y + R.cells[0].h / 2);
+   r[off] = cvCellText(its);
+   var sz = 9, bd = false; its.forEach(function(it){ sz = Math.max(sz, it.h); bd = bd || it.bold; });
+   for(var i = off; i < nc; i++) st[i] = {font:{sz:Math.round(sz), bold:bd}, alignment:{horizontal:'center', vertical:'center', wrapText:true}, border:B};
+   if(fl) for(var i = off; i < nc; i++) st[i].fill = {patternType:'solid', fgColor:{rgb:fl.slice(1).toUpperCase()}};
+   if(nc - off > 1) merges.push({s:{r:ri, c:off}, e:{r:ri, c:nc - 1}});
+   if(hasLabel) st[0] = {border:B};
+  } else {
+   cols.forEach(function(C, ci){
+    var rc = null; R.cells.forEach(function(q){ if(Math.abs(q.x - C.x) <= 3) rc = q; });
+    var its = rc ? items.filter(function(it){ return !it.rot && cvIn(cvAnchor(it), rc, 1); }) : [];
+    r[off + ci] = cvCellText(its);
+    var sz = 9, bd = false; its.forEach(function(it){ sz = Math.max(sz, it.h); bd = bd || it.bold; });
+    var fl = rc ? fillAt(rc.x + rc.w / 2, rc.y + rc.h / 2) : null;
+    var dark = fl && cvLum(fl) < 0.5;
+    st[off + ci] = {font:{sz:Math.round(sz), bold:bd, color:{rgb:dark ? 'FFFFFF' : '000000'}}, alignment:{horizontal:'center', vertical:'center', wrapText:true}, border:B};
+    if(fl) st[off + ci].fill = {patternType:'solid', fgColor:{rgb:fl.slice(1).toUpperCase()}};
+   });
+   if(hasLabel) st[0] = {border:B};
+  }
+  aoa.push(r); styles.push(st); hts.push(Math.max(12, g.h));
+  bandRows.push({ri:ri, cy:g.cy});
+ });
+ // etiquetas laterales combinadas
+ if(hasLabel){
+  bands.forEach(function(b){
+   var lab = labels.filter(function(l){ return Math.abs(l.y - b.y) < 0.5 && Math.abs(l.h - b.h) < 0.5; })[0];
+   var rs = bandRows.filter(function(x){ return x.cy >= b.y && x.cy <= b.y + b.h; }).map(function(x){ return x.ri; });
+   if(!rs.length || !lab) return;
+   var r0 = Math.min.apply(null, rs), r1 = Math.max.apply(null, rs);
+   var fl = b.fill || fillAt(b.x + b.w / 2, b.y + b.h / 2);
+   aoa[r0][0] = lab.text;
+   var dark = fl && cvLum(fl) < 0.5;
+   var stl = {font:{sz:7, bold:true, color:{rgb:dark ? 'FFFFFF' : '000000'}}, alignment:{horizontal:'center', vertical:'center', textRotation:90, wrapText:true}, border:B};
+   if(fl) stl.fill = {patternType:'solid', fgColor:{rgb:fl.slice(1).toUpperCase()}};
+   for(var q = r0; q <= r1; q++) styles[q][0] = stl;
+   if(r1 > r0) merges.push({s:{r:r0, c:0}, e:{r:r1, c:0}});
+  });
+ }
+ below.forEach(function(L){
+  // una sola celda combinada con todo el texto de la linea (suele ser pie o leyenda)
+  var r = blank(), st = blank();
+  var its = L.items.slice().sort(function(a, b){ return a.x - b.x; });
+  r[0] = its.map(function(it){ return it.s.trim(); }).filter(Boolean).join('  ').replace(/\s+/g, ' ');
+  var sz = 0, bd = false; its.forEach(function(it){ sz = Math.max(sz, it.h); bd = bd || it.bold; });
+  st[0] = {font:{sz:Math.max(8, Math.round(sz)), bold:bd, color:{rgb:'222222'}}, alignment:{horizontal:'center', vertical:'center'}};
+  if(nc > 1) merges.push({s:{r:aoa.length, c:0}, e:{r:aoa.length, c:nc - 1}});
+  aoa.push(r); styles.push(st); hts.push(Math.max(14, L.h * 1.5));
+ });
+ return {aoa:aoa, styles:styles, heights:hts, merges:merges, cols:colDefs};
+}
+
+function cvLayoutToWs(L){
+ var ws = XLSX.utils.aoa_to_sheet(L.aoa);
+ L.styles.forEach(function(row, r){
+  row.forEach(function(st, c){
+   if(!st) return;
+   var ref = XLSX.utils.encode_cell({r:r, c:c});
+   if(!ws[ref]) ws[ref] = {t:'s', v:''};
+   ws[ref].s = st;
+  });
+ });
+ ws['!merges'] = L.merges;
+ ws['!cols'] = L.cols.map(function(c){ return {wch:Math.max(9, Math.round(c.w / 5.3))}; });
+ ws['!pageSetup'] = {orientation:'landscape', paperSize:9, fitToWidth:1, fitToHeight:1};
+ ws['!sheetPr'] = {pageSetUpPr:{fitToPage:true}};
+ ws['!rows'] = L.heights.map(function(h){ return {hpt:Math.round(h * 10) / 10}; });
+ return ws;
 }
 
 function cvCellText(its){
@@ -2780,10 +2939,22 @@ async function cvPdfLines(buf){
   var items = [];
   tc.items.forEach(function(i){
    if(typeof i.str !== 'string' || !i.str.trim()) return;
-   items.push({s:i.str, x:i.transform[4], y:i.transform[5], h:Math.abs(i.transform[3]) || i.height || 10, w:i.width || 0, rot:Math.abs(i.transform[1]) > 0.01 || Math.abs(i.transform[3]) < 0.01, i:items.length});
+   items.push({s:i.str, x:i.transform[4], y:i.transform[5], h:Math.abs(i.transform[3]) || i.height || 10, w:i.width || 0, font:i.fontName, rot:Math.abs(i.transform[1]) > 0.01 || Math.abs(i.transform[3]) < 0.01, i:items.length});
   });
   var grid = null;
-  try{ grid = cvPdfGrid(await cvPdfRects(page), items); }catch(e){ grid = null; }
+  try{
+   var rcs = await cvPdfRects(page);
+   var bcache = {};
+   items.forEach(function(it){
+    if(!(it.font in bcache)){
+     var nm = '';
+     try{ var fo = page.commonObjs.get(it.font); nm = (fo && (fo.name || fo.loadedName)) || ''; }catch(e){}
+     bcache[it.font] = /bold|black|heavy|semibold|demi/i.test(nm);
+    }
+    it.bold = bcache[it.font];
+   });
+   grid = cvPdfGrid(rcs, items);
+  }catch(e){ grid = null; }
   if(grid) items = items.filter(function(it){ return !grid.inside[it.i]; });
   items.sort(function(a, b){ return b.y - a.y; });
   var lines = [];
@@ -2814,7 +2985,7 @@ async function cvPdfLines(buf){
    if(text) out.push({text:text, cells:cells, y:L.y, size:size, x:L.items[0].x, page:p, top:view[3], bottom:view[1]});
   });
   if(grid){
-   out.push({text:'', cells:[], y:grid.top, size:0, x:grid.left, page:p, top:view[3], bottom:view[1], grid:grid.rows});
+   out.push({text:'', cells:[], y:grid.top, size:0, x:grid.left, page:p, top:view[3], bottom:view[1], grid:grid.rows, layout:grid.layout});
    out.sort(function(a, b){ return b.y - a.y; });
   }
   pages.push({lines:out, height:view[3] - view[1]});
@@ -2864,7 +3035,7 @@ function cvPdfBlocks(pages){
  pages.forEach(function(pg, pi){
   var prev = null;
   pg.lines.forEach(function(l){
-   if(l.grid){ blocks.push({kind:'table', rows:l.grid}); prev = null; return; }
+   if(l.grid){ blocks.push({kind:'table', rows:l.grid, layout:l.layout}); prev = null; return; }
    var kind = 'p', level = 0, text = l.text;
    if(isHead(l)){ kind = 'h'; level = headLevel(l); }
    else if(l.cells.length > 1){ kind = 'row'; }
@@ -3014,7 +3185,7 @@ function cvHtmlTables(html){
 }
 
 function cvBlocksTables(blocks){
- return blocks.filter(function(b){ return b.kind === 'table'; }).map(function(b){ return b.rows; });
+ return blocks.filter(function(b){ return b.kind === 'table'; });
 }
 
 // Convierte a numero lo que claramente lo es (1.234,56 / 12,5 / 1514); respeta codigos con ceros a la izquierda
@@ -3029,11 +3200,16 @@ function cvCell(v){
  return t;
 }
 
+var cvXlsxFaithful = true;
 function cvTablesToXlsx(tables){
  var wb = XLSX.utils.book_new();
- tables.forEach(function(rows, i){
+ tables.forEach(function(t, i){
+  var ws;
+  if(!Array.isArray(t) && t.layout && cvXlsxFaithful){ ws = cvLayoutToWs(t.layout); }
+  else {
+  var rows = Array.isArray(t) ? t : t.rows;
   var data = rows.map(function(r){ return r.map(cvCell); });
-  var ws = XLSX.utils.aoa_to_sheet(data);
+  ws = XLSX.utils.aoa_to_sheet(data);
   var n = data.reduce(function(m, r){ return Math.max(m, r.length); }, 0), cols = [];
   for(var c = 0; c < n; c++){
    var w = 8;
@@ -3041,6 +3217,7 @@ function cvTablesToXlsx(tables){
    cols.push({wch: Math.min(w, 60)});
   }
   ws['!cols'] = cols;
+  }
   XLSX.utils.book_append_sheet(wb, ws, 'Tabla ' + (i + 1));
  });
  var arr = XLSX.write(wb, {bookType:'xlsx', type:'array'});
